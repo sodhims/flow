@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "DFD2",
   "resources": {
-    "hash": "sha256-2eLtyUrW/Dg1aGMwCcqaCRACvGcVBwTyJilN19GeveQ=",
+    "hash": "sha256-Sz+yAONKOEzjlpK4cB29zYmAllRzVmkxlUNMcX1fSVM=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Components.p3plhuewiz.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Web.m6jp09ezfj.wasm": "Microsoft.AspNetCore.Components.Web.wasm",
@@ -39,7 +39,7 @@
       "System.Threading.q2tgddxke7.wasm": "System.Threading.wasm",
       "System.t4d4s3f398.wasm": "System.wasm",
       "System.Private.CoreLib.lm7blx79ql.wasm": "System.Private.CoreLib.wasm",
-      "DFD2.tuz4n1zf9r.wasm": "DFD2.wasm",
+      "DFD2.ju5v9j2jf5.wasm": "DFD2.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.native.noby4tlk4d.js": "dotnet.native.js",
       "dotnet.native.qe75a9vfqn.wasm": "dotnet.native.wasm",
@@ -101,7 +101,7 @@
       "System.Text.RegularExpressions.l2b6z805dd.wasm": "sha256-jeAi2pvxce9vYWvBZuogAuq5qn3NllOLnunZr5nlurU=",
       "System.Threading.q2tgddxke7.wasm": "sha256-zncUNmLvW8+ubA+sqWx5FiQfdH+7iXKdHOZT34w96r0=",
       "System.t4d4s3f398.wasm": "sha256-fVP2BxRRKpBA0PmBbKxmO45bXDrAXVn1GthlDclLbeU=",
-      "DFD2.tuz4n1zf9r.wasm": "sha256-hZkV6F1UV01t1IlLyzeyFlvqkvei58S3no8/uZ5kYAQ="
+      "DFD2.ju5v9j2jf5.wasm": "sha256-W+QmrHM7gelDmfGPL/6BuTThsIvGOM6wWNN5zOKxcOU="
     }
   },
   "cacheBootResources": true,
