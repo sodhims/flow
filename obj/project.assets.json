@@ -2004,11 +2004,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "R:\\dfd2wasmTwin\\dfd2wasm.csproj",
+      "projectUniqueName": "R:\\dfd2wasm\\dfd2wasm.csproj",
       "projectName": "dfd2wasm",
-      "projectPath": "R:\\dfd2wasmTwin\\dfd2wasm.csproj",
+      "projectPath": "R:\\dfd2wasm\\dfd2wasm.csproj",
       "packagesPath": "C:\\Users\\sodhi\\.nuget\\packages\\",
-      "outputPath": "R:\\dfd2wasmTwin\\obj\\",
+      "outputPath": "R:\\dfd2wasm\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

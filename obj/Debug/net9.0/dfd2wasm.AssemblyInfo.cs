@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("dfd2wasm")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f6830848261ae73903e657f05638b1d4bc380e3e")]
 [assembly: System.Reflection.AssemblyProductAttribute("dfd2wasm")]
 [assembly: System.Reflection.AssemblyTitleAttribute("dfd2wasm")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
