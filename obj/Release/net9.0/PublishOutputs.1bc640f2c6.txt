@@ -1,0 +1,11 @@
+R:\dfd2wasm\publish\publish\web.config
+R:\dfd2wasm\publish\publish\dfd2wasm.staticwebassets.endpoints.json
+R:\dfd2wasm\publish\publish\publish\dfd2wasm.staticwebassets.endpoints.json
+R:\dfd2wasm\publish\publish\publish\segmentation-rules.json
+R:\dfd2wasm\publish\publish\publish\wwwroot\sample-data\weather.json
+R:\dfd2wasm\publish\publish\publish\wwwroot\_framework\blazor.boot.json
+R:\dfd2wasm\publish\publish\segmentation-rules.json
+R:\dfd2wasm\publish\publish\wwwroot\sample-data\weather.json
+R:\dfd2wasm\publish\publish\wwwroot\_framework\blazor.boot.json
+R:\dfd2wasm\publish\segmentation-rules.json
+R:\dfd2wasm\publish\web.config
