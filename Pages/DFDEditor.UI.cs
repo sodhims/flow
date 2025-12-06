@@ -89,23 +89,67 @@ public partial class DFDEditor
                 StateHasChanged();
             }
         }
-        // Escape key to cancel selection or clear selected items
+        // Escape key to cancel various modes and selections
         else if (e.Key == "Escape")
         {
+            // Cancel multi-connect mode first
+            if (multiConnectMode)
+            {
+                ClearMultiConnectState();
+                multiConnectMode = false;
+                StateHasChanged();
+                return;
+            }
+            
+            // Cancel pending connection
+            if (pendingConnectionNodeId.HasValue)
+            {
+                pendingConnectionNodeId = null;
+                pendingConnection = null;
+                pendingConnectionPoint = null;
+                StateHasChanged();
+                return;
+            }
+            
+            // Cancel chain mode
+            if (chainMode)
+            {
+                chainMode = false;
+                lastChainedNodeId = null;
+                StateHasChanged();
+                return;
+            }
+            
+            // Cancel print area selection
             if (isPrintAreaSelection)
             {
                 isPrintAreaSelection = false;
                 isSelecting = false;
                 selectionStart = null;
+                StateHasChanged();
+                return;
             }
-            else if (selectedNodes.Count > 0 || selectedEdges.Count > 0 || selectedLabels.Count > 0)
+            
+            // Cancel array mode
+            if (arrayMode)
+            {
+                arrayMode = false;
+                StateHasChanged();
+                return;
+            }
+            
+            // Clear selections
+            if (selectedNodes.Count > 0 || selectedEdges.Count > 0 || selectedLabels.Count > 0)
             {
                 selectedNodes.Clear();
                 selectedEdges.Clear();
                 selectedLabels.Clear();
                 StateHasChanged();
+                return;
             }
-            else if (printArea.HasValue)
+            
+            // Clear print area
+            if (printArea.HasValue)
             {
                 printArea = null;
                 StateHasChanged();

@@ -250,21 +250,13 @@ public partial class DFDEditor
                 nodes.Add(newNode);
             }
 
-            Console.WriteLine($"Total nodes after placement: {nodes.Count}");
-            StateHasChanged();
-
             Console.WriteLine("=== HandleCanvasClick END ===");
+            StateHasChanged();
         }
         catch (Exception ex)
         {
-            Console.WriteLine("!!! EXCEPTION !!!");
-            Console.WriteLine($"Message: {ex.Message}");
-            Console.WriteLine($"Type: {ex.GetType().Name}");
+            Console.WriteLine($"EXCEPTION in HandleCanvasClick: {ex.Message}");
             Console.WriteLine($"Stack: {ex.StackTrace}");
-            if (ex.InnerException != null)
-            {
-                Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
-            }
         }
     }
 
@@ -272,10 +264,9 @@ public partial class DFDEditor
     {
         if (mode != EditorMode.Select) return;
 
+        // Handle chain mode
         if (chainMode)
         {
-            selectedEdges.Clear();
-            
             if (lastChainedNodeId.HasValue && lastChainedNodeId.Value != nodeId)
             {
                 UndoService.SaveState(nodes, edges, edgeLabels);
@@ -295,6 +286,7 @@ public partial class DFDEditor
                         FromConnection = fromConn,
                         ToConnection = toConn,
                         IsOrthogonal = useOrthoPlacement,
+                        Style = defaultEdgeStyle,
                         StrokeWidth = defaultStrokeWidth,
                         StrokeColor = defaultStrokeColor,
                         StrokeDashArray = defaultStrokeDashArray,
@@ -305,13 +297,15 @@ public partial class DFDEditor
                     edges.Add(newEdge);
                 }
             }
-            
+
             lastChainedNodeId = nodeId;
             selectedNodes.Clear();
             selectedNodes.Add(nodeId);
+            StateHasChanged();
             return;
         }
 
+        // Handle pending connection from connection point
         if (pendingConnectionNodeId.HasValue && pendingConnection != null)
         {
             if (pendingConnectionNodeId.Value == nodeId)
@@ -323,37 +317,35 @@ public partial class DFDEditor
 
             UndoService.SaveState(nodes, edges, edgeLabels);
 
-            var node = nodes.FirstOrDefault(n => n.Id == nodeId);
-            if (node == null) return;
-            
-            var mousePos = GetLastMousePosition();
-            var toConnection = GeometryService.FindClosestConnectionPoint(node, mousePos.X, mousePos.Y);
-
-            var newEdge = new Edge
+            var toNode = nodes.FirstOrDefault(n => n.Id == nodeId);
+            if (toNode != null)
             {
-                Id = nextEdgeId++,
-                From = pendingConnectionNodeId.Value,
-                To = nodeId,
-                FromConnection = new ConnectionPoint
+                var fromNode = nodes.FirstOrDefault(n => n.Id == pendingConnectionNodeId.Value);
+                var (_, toConn) = GeometryService.GetOptimalConnectionPoints(fromNode!, toNode);
+
+                var newEdge = new Edge
                 {
-                    Side = pendingConnection.Side,
-                    Position = pendingConnection.Position
-                },
-                ToConnection = toConnection,
-                IsOrthogonal = useOrthoPlacement,
-                StrokeWidth = defaultStrokeWidth,
-                StrokeColor = defaultStrokeColor,
-                StrokeDashArray = defaultStrokeDashArray,
-                IsDoubleLine = defaultIsDoubleLine
-            };
+                    Id = nextEdgeId++,
+                    From = pendingConnectionNodeId.Value,
+                    To = nodeId,
+                    FromConnection = pendingConnection,
+                    ToConnection = toConn,
+                    IsOrthogonal = useOrthoPlacement,
+                    Style = defaultEdgeStyle,
+                    StrokeWidth = defaultStrokeWidth,
+                    StrokeColor = defaultStrokeColor,
+                    StrokeDashArray = defaultStrokeDashArray,
+                    IsDoubleLine = defaultIsDoubleLine
+                };
 
-            newEdge.PathData = PathService.GetEdgePath(newEdge, nodes);
+                newEdge.PathData = PathService.GetEdgePath(newEdge, nodes);
 
-            edges.Add(newEdge);
-            pendingConnectionNodeId = null;
-            pendingConnection = null;
-            selectedNodes.Clear();
-            return;
+                edges.Add(newEdge);
+                pendingConnectionNodeId = null;
+                pendingConnection = null;
+                selectedNodes.Clear();
+                return;
+            }
         }
 
         selectedEdges.Clear();
@@ -396,6 +388,7 @@ public partial class DFDEditor
                 FromConnection = fromConn,
                 ToConnection = toConn,
                 IsOrthogonal = useOrthoPlacement,
+                Style = defaultEdgeStyle,
                 StrokeWidth = defaultStrokeWidth,
                 StrokeColor = defaultStrokeColor,
                 StrokeDashArray = defaultStrokeDashArray,
@@ -441,6 +434,10 @@ public partial class DFDEditor
     {
         if (mode != EditorMode.Select) return;
 
+        // Check for multi-connect mode first
+        if (HandleMultiConnectClick(nodeId, side, position))
+            return;
+
         if (pendingConnectionNodeId.HasValue && pendingConnection != null)
         {
             if (pendingConnectionNodeId.Value == nodeId)
@@ -468,6 +465,7 @@ public partial class DFDEditor
                     Position = position
                 },
                 IsOrthogonal = useOrthoPlacement,
+                Style = defaultEdgeStyle,
                 StrokeWidth = defaultStrokeWidth,
                 StrokeColor = defaultStrokeColor,
                 StrokeDashArray = defaultStrokeDashArray,
@@ -524,12 +522,14 @@ public partial class DFDEditor
             var edge = edges.FirstOrDefault(ed => ed.Id == edgeId);
             if (edge != null)
             {
-                defaultStrokeWidth = edge.StrokeWidth ?? 2;
-                defaultStrokeColor = edge.StrokeColor ?? "#374151";
-                defaultStrokeDashArray = edge.StrokeDashArray ?? "";
-                defaultIsDoubleLine = edge.IsDoubleLine;
+                editStrokeWidth = edge.StrokeWidth ?? 2;
+                editStrokeColor = edge.StrokeColor ?? "#374151";
+                editStrokeDashArray = edge.StrokeDashArray ?? "";
+                editIsDoubleLine = edge.IsDoubleLine;
+                editEdgeStyle = edge.Style;
             }
             
+            showEdgeStylePanel = true;
             StateHasChanged();
         }
     }

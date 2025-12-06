@@ -1,6 +1,15 @@
 namespace dfd2wasm.Models
 {
-    // Edge.cs - Required structure for your Edge class
+    // EdgeStyle enum for different connector types
+    public enum EdgeStyle
+    {
+        Direct,      // Straight line A→B
+        Ortho,       // Right angles only
+        OrthoRound,  // Right angles with rounded corners
+        Bezier,      // Smooth S-curve
+        Arc,         // Single curved arc
+        Stylized     // Fancy with embellishments
+    }
 
     public class Edge
     {
@@ -13,29 +22,26 @@ namespace dfd2wasm.Models
         public string? StrokeColor { get; set; }
         public string? StrokeDashArray { get; set; }
         public bool IsDoubleLine { get; set; }
-        public bool IsOrthogonal { get; set; }
+        
+        // Replace IsOrthogonal with EdgeStyle
+        public bool IsOrthogonal { get; set; } // Keep for backward compatibility
+        public EdgeStyle Style { get; set; } = EdgeStyle.Direct;
 
-        // CRITICAL: Must have these two!
         public string PathData { get; set; } = "";
         public string Label { get; set; } = "";
 
-        // Add these two lines to your Edge class:
         public string? CustomFromSide { get; set; }
         public string? CustomToSide { get; set; }
 
         public List<Waypoint> Waypoints { get; set; } = new();
     }
-    // Waypoint.cs - For edge waypoints
+
     public class Waypoint
     {
         public double X { get; set; }
         public double Y { get; set; }
     }
 
-    // Node.cs - Your node structure should include
- 
-
-    // EditorMode.cs - Enum for editor modes
     public enum EditorMode
     {
         Select,

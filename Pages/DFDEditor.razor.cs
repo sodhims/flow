@@ -107,6 +107,7 @@ public partial class DFDEditor
     private string editStrokeColor = "#374151";
     private string editStrokeDashArray = "";
     private bool editIsDoubleLine = false;
+    private EdgeStyle editEdgeStyle = EdgeStyle.Direct;  // NEW: Connector style
 
     // Edge style defaults
     private int defaultStrokeWidth = 2;
@@ -114,6 +115,7 @@ public partial class DFDEditor
     private string defaultStrokeDashArray = "";
     private bool defaultIsDoubleLine = false;
     private string defaultArrowStyle = "filled";
+    private EdgeStyle defaultEdgeStyle = EdgeStyle.Direct;  // NEW: Default connector style
 
     // Mouse tracking
     private double svgMouseX = 0;
@@ -137,6 +139,28 @@ public partial class DFDEditor
     // Chain mode state
     private bool chainMode = false;
     private int? lastChainedNodeId = null;
+
+    // Multi-connect mode state
+    private bool multiConnectMode = false;
+    private int? multiConnectSourceNode = null;
+    private ConnectionPoint? multiConnectSourcePoint = null;
+    private (double X, double Y)? multiConnectSourceCoords = null;
+
+    // Helper to get current select mode label
+    private string GetSelectModeLabel()
+    {
+        if (chainMode) return "(Chain)";
+        if (multiConnectMode) return "(Multi)";
+        return "";
+    }
+
+    // Helper to clear multi-connect state
+    private void ClearMultiConnectState()
+    {
+        multiConnectSourceNode = null;
+        multiConnectSourcePoint = null;
+        multiConnectSourceCoords = null;
+    }
 
     // Preset colors
     private readonly List<string> presetColors = new()
@@ -453,5 +477,39 @@ public partial class DFDEditor
         public double Y { get; set; }
         public double Width { get; set; }
         public double Height { get; set; }
+    }
+
+    private void DeleteSelected()
+    {
+        if (selectedNodes.Count == 0 && selectedEdges.Count == 0 && selectedLabels.Count == 0)
+            return;
+
+        UndoService.SaveState(nodes, edges, edgeLabels);
+
+        // Delete selected nodes and their connected edges
+        foreach (var nodeId in selectedNodes.ToList())
+        {
+            // Remove edges connected to this node
+            edges.RemoveAll(e => e.From == nodeId || e.To == nodeId);
+            // Remove the node
+            nodes.RemoveAll(n => n.Id == nodeId);
+        }
+
+        // Delete selected edges
+        foreach (var edgeId in selectedEdges.ToList())
+        {
+            edges.RemoveAll(e => e.Id == edgeId);
+        }
+
+        // Delete selected labels
+        foreach (var labelId in selectedLabels.ToList())
+        {
+            edgeLabels.RemoveAll(l => l.Id == labelId);
+        }
+
+        selectedNodes.Clear();
+        selectedEdges.Clear();
+        selectedLabels.Clear();
+        StateHasChanged();
     }
 }

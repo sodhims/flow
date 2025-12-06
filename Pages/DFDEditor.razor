@@ -16,72 +16,121 @@
         </div>
 
         <div class="toolbar-buttons">
-            <button class="@(mode == EditorMode.Select ? "active" : "")"
-                    @onclick="@(() => mode = EditorMode.Select)">
-                Select / Connect
-            </button>
+            @* Select Mode Dropdown *@
+            <div class="toolbar-dropdown">
+                <button class="dropdown-trigger @(mode == EditorMode.Select ? "active" : "")">
+                    ✋ Select @(GetSelectModeLabel()) ▾
+                </button>
+                <div class="dropdown-menu">
+                    <button class="@(mode == EditorMode.Select && !chainMode && !multiConnectMode ? "active" : "")"
+                            @onclick="@(() => { mode = EditorMode.Select; chainMode = false; multiConnectMode = false; ClearMultiConnectState(); })">
+                        ✋ Single Select
+                    </button>
+                    <button class="@(chainMode ? "active" : "")"
+                            @onclick="@(() => { mode = EditorMode.Select; chainMode = true; multiConnectMode = false; ClearMultiConnectState(); lastChainedNodeId = null; })"
+                            title="Click nodes in sequence to connect them">
+                        🔗 Chain Connect
+                    </button>
+                    <button class="@(multiConnectMode ? "active" : "")"
+                            @onclick="@(() => { mode = EditorMode.Select; multiConnectMode = true; chainMode = false; ClearMultiConnectState(); })"
+                            title="Select source, then click multiple destinations">
+                        🔀 Multi-Connect
+                    </button>
+                </div>
+            </div>
+
+            @* Add Shape Button *@
             <button class="@(mode == EditorMode.AddNode ? "active" : "")"
-                    @onclick="@(() => mode = EditorMode.AddNode)">
-                Add Shape
-            </button>
-            <button class="@(chainMode ? "active" : "")"
-                    @onclick="@(() => { chainMode = !chainMode; if (chainMode) { mode = EditorMode.Select; lastChainedNodeId = null; } })"
-                    title="Chain Mode: Click nodes in sequence to connect them automatically">
-                🔗 Chain
-            </button>
-            <button class="@(useOrthoPlacement ? "active" : "")"
-                    @onclick="@(() => ToggleOrthoMode())"
-                    title="Ortho Mode: Orthogonal placement and orthogonal edges">
-                Ortho Mode
-            </button>
-            <button class="@(snapToGrid ? "active" : "")"
-                    @onclick="@(() => snapToGrid = !snapToGrid)">
-                Snap to Grid
-            </button>
-@*            <button class="@(showRowGuide ? "active" : "")"
-                    @onclick="@(() => showRowGuide = !showRowGuide)"
-                    title="Show/hide row guide (horizontal lines)">
-                ➖ Row Guide
-            </button>
-            <button class="@(showColumnGuide ? "active" : "")"
-                    @onclick="@(() => showColumnGuide = !showColumnGuide)"
-                    title="Show/hide column guide (vertical lines)">
-                ➕ Column Guide
-            </button> *@
-            <button class="@(arrayMode ? "active" : "")"
-                    @onclick="@(() => { arrayMode = !arrayMode; if (arrayMode) mode = EditorMode.AddNode; })"
-                    title="Array Mode: Place multiple shapes at once">
-                📊 Array
+                    @onclick="@(() => { mode = EditorMode.AddNode; chainMode = false; multiConnectMode = false; ClearMultiConnectState(); })">
+                ➕ Add Shape
             </button>
 
-            <button @onclick="HandleUndo"
-                    disabled="@(!UndoService.CanUndo)"
-                    title="Undo last action (Ctrl+Z)">
-                ↶ Undo
-            </button>
-
-            @if (selectedNodes.Count == 1)
-            {
-                <button @onclick="StartEditingSelectedNode"
-                        title="Edit the text of the selected node (or double-click node)">
-                    ✏️ Edit Text
+            @* Place Dropdown *@
+            <div class="toolbar-dropdown">
+                <button class="dropdown-trigger @(arrayMode || snapToGrid || useOrthoPlacement ? "active" : "")">
+                    📐 Options ▾
                 </button>
+                <div class="dropdown-menu">
+                    <button class="@(useOrthoPlacement ? "active" : "")"
+                            @onclick="@(() => ToggleOrthoMode())"
+                            title="Use orthogonal edges">
+                        📐 Ortho Mode @(useOrthoPlacement ? "✓" : "")
+                    </button>
+                    <button class="@(snapToGrid ? "active" : "")"
+                            @onclick="@(() => snapToGrid = !snapToGrid)">
+                        🧲 Snap to Grid @(snapToGrid ? "✓" : "")
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <button class="@(arrayMode ? "active" : "")"
+                            @onclick="@(() => { arrayMode = !arrayMode; if (arrayMode) mode = EditorMode.AddNode; })"
+                            title="Place multiple shapes at once">
+                        📊 Array Mode @(arrayMode ? "✓" : "")
+                    </button>
+                    @if (arrayMode)
+                    {
+                        <div class="dropdown-submenu">
+                            <span class="submenu-label">Orientation:</span>
+                            <button class="@(arrayOrientation == "horizontal" ? "active" : "")"
+                                    @onclick="@(() => arrayOrientation = "horizontal")">
+                                Horizontal ███
+                            </button>
+                            <button class="@(arrayOrientation == "vertical" ? "active" : "")"
+                                    @onclick="@(() => arrayOrientation = "vertical")">
+                                Vertical
+                            </button>
+                            <span class="submenu-label">Count:</span>
+                            <select @bind="arrayCount" class="dropdown-select">
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @* Align Dropdown - only when 2+ nodes selected *@
+            @if (selectedNodes.Count >= 2)
+            {
+                <div class="toolbar-dropdown">
+                    <button class="dropdown-trigger">
+                        📏 Align ▾
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-wide">
+                        <div class="dropdown-row">
+                            <span class="submenu-label">Horizontal:</span>
+                            <button @onclick="AlignLeft" title="Align Left">⬅ Left</button>
+                            <button @onclick="AlignCenterH" title="Align Center">⬌ Center</button>
+                            <button @onclick="AlignRight" title="Align Right">➡ Right</button>
+                        </div>
+                        <div class="dropdown-row">
+                            <span class="submenu-label">Vertical:</span>
+                            <button @onclick="AlignTop" title="Align Top">⬆ Top</button>
+                            <button @onclick="AlignCenterV" title="Align Center">⬍ Center</button>
+                            <button @onclick="AlignBottom" title="Align Bottom">⬇ Bottom</button>
+                        </div>
+                        @if (selectedNodes.Count >= 3)
+                        {
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-row">
+                                <span class="submenu-label">Distribute:</span>
+                                <button @onclick="DistributeH" title="Distribute Horizontally">↔ Horizontal</button>
+                                <button @onclick="DistributeV" title="Distribute Vertically">↕ Vertical</button>
+                            </div>
+                        }
+                    </div>
+                </div>
             }
 
-            @if (selectedLabels.Count == 1)
-            {
-                <button @onclick="StartEditingSelectedLabel"
-                        title="Edit the text of the selected label">
-                    ✏️ Edit Label
-                </button>
-            }
-            <div class="examples-dropdown">
-                <button @onclick="@(() => showExamplesMenu = !showExamplesMenu)">
-                    📋 Examples
+            @* Examples Dropdown *@
+            <div class="toolbar-dropdown">
+                <button class="dropdown-trigger" @onclick="@(() => showExamplesMenu = !showExamplesMenu)">
+                    📋 Examples ▾
                 </button>
                 @if (showExamplesMenu)
                 {
-                    <div class="examples-menu">
+                    <div class="dropdown-menu">
                         @foreach (var example in Examples)
                         {
                             <button @onclick="@(() => LoadExample(example.Key))" title="@example.Value.Description">
@@ -92,129 +141,91 @@
                 }
             </div>
 
-            <button @onclick="TogglePrintAreaSelection"
-                    class="@(isPrintAreaSelection ? "active" : "")"
-                    title="Select print area: Draw a box around the area you want to export">
-                📄 @(isPrintAreaSelection ? "Cancel Selection" : "Export PDF")
-            </button>
-            <button @onclick="PrintAll"
-                    title="Print entire canvas at maximum resolution (no selection needed)">
-                🖨️ Print All
+            @* Export/Print Dropdown *@
+            <div class="toolbar-dropdown">
+                <button class="dropdown-trigger">
+                    🖨️ Print ▾
+                </button>
+                <div class="dropdown-menu">
+                    <button @onclick="TogglePrintAreaSelection"
+                            class="@(isPrintAreaSelection ? "active" : "")"
+                            title="Draw a box around the area to export">
+                        📄 @(isPrintAreaSelection ? "Cancel Selection" : "Select Area")
+                    </button>
+                    <button @onclick="PrintAll"
+                            title="Print entire canvas">
+                        🖨️ Print All
+                    </button>
+                </div>
+            </div>
+
+            @* Undo Button *@
+            <button @onclick="HandleUndo"
+                    disabled="@(!UndoService.CanUndo)"
+                    title="Undo last action (Ctrl+Z)">
+                ↶ Undo
             </button>
 
-            @if (arrayMode)
+            @* Edit Text - contextual *@
+            @if (selectedNodes.Count == 1)
             {
-                <div class="array-controls">
-                    <button class="@(arrayOrientation == "horizontal" ? "active" : "")"
-                            @onclick="@(() => arrayOrientation = "horizontal")"
-                            title="Horizontal array"
-                            style="letter-spacing: 2px;">
-                        ███
-                    </button>
-                    <button class="@(arrayOrientation == "vertical" ? "active" : "")"
-                            @onclick="@(() => arrayOrientation = "vertical")"
-                            title="Vertical array"
-                            style="line-height: 0.6; font-size: 10px;">
-                        █<br/>█<br/>█
-                    </button>
-                    <select @bind="arrayCount" class="array-dropdown">
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
-                </div>
+                <button @onclick="StartEditingSelectedNode"
+                        title="Edit the text of the selected node">
+                    ✏️ Edit
+                </button>
             }
-
-            @if (selectedNodes.Count >= 2)
+            @if (selectedLabels.Count == 1)
             {
-                <div class="align-controls">
-                    <span class="align-label">Align:</span>
-                    <div class="align-group">
-                        <button @onclick="AlignLeft" title="Align Left">
-                            <svg width="16" height="16" viewBox="0 0 16 16">
-                                <rect x="1" y="1" width="2" height="14" fill="currentColor"/>
-                                <rect x="4" y="3" width="10" height="4" fill="currentColor"/>
-                                <rect x="4" y="9" width="6" height="4" fill="currentColor"/>
-                            </svg>
-                        </button>
-                        <button @onclick="AlignCenterH" title="Align Center Horizontally">
-                            <svg width="16" height="16" viewBox="0 0 16 16">
-                                <rect x="7" y="1" width="2" height="14" fill="currentColor"/>
-                                <rect x="2" y="3" width="12" height="4" fill="currentColor"/>
-                                <rect x="4" y="9" width="8" height="4" fill="currentColor"/>
-                            </svg>
-                        </button>
-                        <button @onclick="AlignRight" title="Align Right">
-                            <svg width="16" height="16" viewBox="0 0 16 16">
-                                <rect x="13" y="1" width="2" height="14" fill="currentColor"/>
-                                <rect x="2" y="3" width="10" height="4" fill="currentColor"/>
-                                <rect x="6" y="9" width="6" height="4" fill="currentColor"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="align-group">
-                        <button @onclick="AlignTop" title="Align Top">
-                            <svg width="16" height="16" viewBox="0 0 16 16">
-                                <rect x="1" y="1" width="14" height="2" fill="currentColor"/>
-                                <rect x="3" y="4" width="4" height="10" fill="currentColor"/>
-                                <rect x="9" y="4" width="4" height="6" fill="currentColor"/>
-                            </svg>
-                        </button>
-                        <button @onclick="AlignCenterV" title="Align Center Vertically">
-                            <svg width="16" height="16" viewBox="0 0 16 16">
-                                <rect x="1" y="7" width="14" height="2" fill="currentColor"/>
-                                <rect x="3" y="2" width="4" height="12" fill="currentColor"/>
-                                <rect x="9" y="4" width="4" height="8" fill="currentColor"/>
-                            </svg>
-                        </button>
-                        <button @onclick="AlignBottom" title="Align Bottom">
-                            <svg width="16" height="16" viewBox="0 0 16 16">
-                                <rect x="1" y="13" width="14" height="2" fill="currentColor"/>
-                                <rect x="3" y="2" width="4" height="10" fill="currentColor"/>
-                                <rect x="9" y="6" width="4" height="6" fill="currentColor"/>
-                            </svg>
-                        </button>
-                    </div>
-                    @if (selectedNodes.Count >= 3)
-                    {
-                        <div class="align-group">
-                            <button @onclick="DistributeH" title="Distribute Horizontally">
-                                <svg width="16" height="16" viewBox="0 0 16 16">
-                                    <rect x="1" y="4" width="3" height="8" fill="currentColor"/>
-                                    <rect x="6.5" y="4" width="3" height="8" fill="currentColor"/>
-                                    <rect x="12" y="4" width="3" height="8" fill="currentColor"/>
-                                </svg>
-                            </button>
-                            <button @onclick="DistributeV" title="Distribute Vertically">
-                                <svg width="16" height="16" viewBox="0 0 16 16">
-                                    <rect x="4" y="1" width="8" height="3" fill="currentColor"/>
-                                    <rect x="4" y="6.5" width="8" height="3" fill="currentColor"/>
-                                    <rect x="4" y="12" width="8" height="3" fill="currentColor"/>
-                                </svg>
-                            </button>
-                        </div>
-                    }
-                </div>
+                <button @onclick="StartEditingSelectedLabel"
+                        title="Edit the selected label">
+                    ✏️ Edit Label
+                </button>
             }
         </div>
 
-        <div class="toolbar-actions">
-            <button @onclick="SaveDiagram" class="btn-save" title="Export diagram as JSON">
-                💾 Save
+        @* File Actions *@
+        <div class="toolbar-dropdown toolbar-right">
+            <button class="dropdown-trigger">
+                📁 File ▾
             </button>
-            <button @onclick="@(() => showLoadDialog = true)" class="btn-load" title="Import from JSON, Mermaid, or GraphViz">
-                📥 Import
-            </button>
-            <button @onclick="ExportDiagram" class="btn-export" title="Export as Mermaid or DOT">
-                📤 Export
-            </button>
-            <button @onclick="@(() => showClearConfirm = true)" class="btn-clear" title="Clear all nodes and edges">
-                🗑️ Clear
-            </button>
+            <div class="dropdown-menu dropdown-menu-right">
+                <button @onclick="SaveDiagram" title="Export diagram as JSON">
+                    💾 Save JSON
+                </button>
+                <button @onclick="@(() => showLoadDialog = true)" title="Import from JSON, Mermaid, or GraphViz">
+                    📥 Import
+                </button>
+                <button @onclick="ExportDiagram" title="Export as Mermaid or DOT">
+                    📤 Export Code
+                </button>
+                <div class="dropdown-divider"></div>
+                <button @onclick="@(() => showClearConfirm = true)" class="btn-danger" title="Clear all">
+                    🗑️ Clear All
+                </button>
+            </div>
         </div>
-
     </div>
+
+    @* Multi-Connect Mode Indicator *@
+    @if (multiConnectMode)
+    {
+        <div class="mode-indicator multi-connect-indicator">
+            @if (multiConnectSourceNode == null)
+            {
+                <span>🔀 <b>Multi-Connect:</b> Click a connection point on the SOURCE node</span>
+            }
+            else
+            {
+                <span>🔀 <b>Source selected!</b> Now click connection points on DESTINATION nodes • <b>Esc</b> to finish</span>
+            }
+        </div>
+    }
+    @if (chainMode)
+    {
+        <div class="mode-indicator chain-indicator">
+            <span>🔗 <b>Chain Mode:</b> Click nodes in sequence to connect them • <b>Esc</b> to finish</span>
+        </div>
+    }
 
     <div class="instructions">
         <strong>Instructions:</strong>
@@ -404,16 +415,32 @@
          @onscroll="HandleCanvasScroll">
         <svg class="svg-layer" style="transform: scale(@zoomLevel); transform-origin: 0 0;">
            <defs>
+                @* Arrowhead markers for each edge color *@
                 @foreach (var color in edges.Where(e => !string.IsNullOrEmpty(e.StrokeColor)).Select(e => e.StrokeColor).Distinct())
                 {
-                    <marker id="arrowhead-@color.Replace("#", "")" markerWidth="10" markerHeight="7"
-                            refX="10" refY="3.5" orient="auto">
-                        <polygon points="0 0, 10 3.5, 0 7" fill="@color" />
+                    <marker id="arrowhead-@color.Replace("#", "")" 
+                            markerWidth="8" markerHeight="6"
+                            refX="7" refY="3" 
+                            orient="auto" 
+                            markerUnits="strokeWidth">
+                        <polygon points="0 0, 8 3, 0 6" fill="@color" />
                     </marker>
                 }
-                <marker id="arrowhead" markerWidth="10" markerHeight="7"
-                        refX="10" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="#374151" />
+                @* Default arrowhead *@
+                <marker id="arrowhead" 
+                        markerWidth="8" markerHeight="6"
+                        refX="7" refY="3" 
+                        orient="auto"
+                        markerUnits="strokeWidth">
+                    <polygon points="0 0, 8 3, 0 6" fill="#374151" />
+                </marker>
+                @* Default gray arrowhead for 374151 color *@
+                <marker id="arrowhead-374151" 
+                        markerWidth="8" markerHeight="6"
+                        refX="7" refY="3" 
+                        orient="auto"
+                        markerUnits="strokeWidth">
+                    <polygon points="0 0, 8 3, 0 6" fill="#374151" />
                 </marker>
             </defs>            @* Dynamic Canvas Background *@
             @if (canvasBackground == "swimlanes-h")
@@ -564,6 +591,8 @@
 
                     <g @onclick="@((e) => HandleEdgeClick(edge.Id, e))"
                        @onclick:stopPropagation="true"
+                       @ondblclick="@((e) => AddWaypointToEdge(edge.Id, e))"
+                       @ondblclick:stopPropagation="true"
                        style="cursor: pointer;">
 
                         @if (edge.IsDoubleLine)
@@ -607,16 +636,33 @@ marker-end="url(#arrowhead-@(edge.StrokeColor?.Replace("#", "") ?? "374151"))"
                               fill="none"
                               style="pointer-events: stroke;" />
 
-                        @* Waypoint handles *@
+                        @* Waypoint handles and midpoint control - drag to move, right-click to delete *@
                         @if (isSelected)
                         {
+                            @* Show existing waypoints *@
                             @foreach (var waypoint in edge.Waypoints)
                             {
-                                <circle cx="@waypoint.X" cy="@waypoint.Y" r="6"
+                                var wp = waypoint; // Capture for lambda
+                                <circle cx="@waypoint.X" cy="@waypoint.Y" r="7"
                                         fill="#3b82f6" stroke="white" stroke-width="2"
-                                        @onmousedown="@((e) => StartDraggingWaypoint(edge.Id, waypoint, e))"
+                                        @onmousedown="@((e) => StartDraggingWaypoint(edge.Id, wp, e))"
                                         @onmousedown:stopPropagation="true"
+                                        @oncontextmenu="@((e) => DeleteWaypoint(edge.Id, wp))"
+                                        @oncontextmenu:preventDefault="true"
+                                        @oncontextmenu:stopPropagation="true"
                                         style="cursor: move;" />
+                            }
+                            
+                            @* Show midpoint handle if no waypoints exist - for easy edge reshaping *@
+                            @if (edge.Waypoints.Count == 0)
+                            {
+                                var mid = GetEdgeMidpoint(edge);
+                                <circle cx="@mid.X" cy="@mid.Y" r="6"
+                                        fill="white" stroke="#3b82f6" stroke-width="2"
+                                        @ondblclick="@((e) => AddWaypointAtMidpoint(edge.Id))"
+                                        @ondblclick:stopPropagation="true"
+                                        style="cursor: pointer;"
+                                        title="Double-click to add waypoint" />
                             }
                         }
 
@@ -647,11 +693,41 @@ marker-end="url(#arrowhead-@(edge.StrokeColor?.Replace("#", "") ?? "374151"))"
                       style="pointer-events: none;" />
             }
 
+            @* Render multi-connect pending line *@
+            @if (multiConnectMode && multiConnectSourceNode.HasValue && multiConnectSourceCoords.HasValue)
+            {
+                @* Line from source to cursor *@
+                <line x1="@multiConnectSourceCoords.Value.X"
+                      y1="@multiConnectSourceCoords.Value.Y"
+                      x2="@currentMousePosition.X"
+                      y2="@currentMousePosition.Y"
+                      stroke="#8b5cf6"
+                      stroke-width="2"
+                      stroke-dasharray="5,5"
+                      style="pointer-events: none;" />
+                
+                @* Highlight the source point *@
+                <circle cx="@multiConnectSourceCoords.Value.X"
+                        cy="@multiConnectSourceCoords.Value.Y"
+                        r="10"
+                        fill="#8b5cf6"
+                        opacity="0.6"
+                        style="pointer-events: none;" />
+                <circle cx="@multiConnectSourceCoords.Value.X"
+                        cy="@multiConnectSourceCoords.Value.Y"
+                        r="6"
+                        fill="#8b5cf6"
+                        stroke="white"
+                        stroke-width="2"
+                        style="pointer-events: none;" />
+            }
+
             @* Render all nodes *@
             @foreach (var node in nodes)
             {
                 var currentNode = node; // Capture for lambda
                 var nodeId = node.Id;
+                var isMultiConnectSource = multiConnectMode && multiConnectSourceNode == nodeId;
 
                 <g class="node-group"
                    transform="translate(@currentNode.X, @currentNode.Y)"
@@ -663,6 +739,30 @@ marker-end="url(#arrowhead-@(edge.StrokeColor?.Replace("#", "") ?? "374151"))"
                    @ondblclick:stopPropagation="true"
                    @onmouseenter="@(() => { if (pendingConnectionNodeId.HasValue && pendingConnectionNodeId.Value != nodeId) { hoveredNodeId = nodeId; StateHasChanged(); } })"
                    @onmouseleave="@(() => { if (hoveredNodeId == nodeId) { hoveredNodeId = null; StateHasChanged(); } })">
+
+                    @* Halo effect for multi-connect source node *@
+                    @if (isMultiConnectSource)
+                    {
+                        <rect x="-8" y="-8"
+                              width="@(currentNode.Width + 16)"
+                              height="@(currentNode.Height + 16)"
+                              fill="none"
+                              stroke="#8b5cf6"
+                              stroke-width="3"
+                              stroke-dasharray="8,4"
+                              rx="8"
+                              opacity="0.8"
+                              style="pointer-events: none;">
+                            <animate attributeName="stroke-dashoffset" values="0;24" dur="1s" repeatCount="indefinite" />
+                        </rect>
+                        <rect x="-4" y="-4"
+                              width="@(currentNode.Width + 8)"
+                              height="@(currentNode.Height + 8)"
+                              fill="#8b5cf6"
+                              opacity="0.1"
+                              rx="6"
+                              style="pointer-events: none;" />
+                    }
 
                     @* Draw the shape based on node type *@
                     @if (currentNode.Shape == NodeShape.Rectangle)
@@ -1082,9 +1182,70 @@ marker-end="url(#arrowhead-@(edge.StrokeColor?.Replace("#", "") ?? "374151"))"
         <div class="edge-style-panel">
             <h3>Edit Edge Style (@selectedEdges.Count selected)</h3>
 
+            @* Connector Style Dropdown - Updates immediately *@
+            <div class="panel-row">
+                <label>Connector Style:</label>
+                <select value="@editEdgeStyle" @onchange="OnEdgeStyleChanged" class="edge-dropdown">
+                    <option value="@EdgeStyle.Direct">Direct (Straight)</option>
+                    <option value="@EdgeStyle.Ortho">Orthogonal (Right Angles)</option>
+                    <option value="@EdgeStyle.OrthoRound">Ortho Rounded</option>
+                    <option value="@EdgeStyle.Bezier">Bezier (Smooth Curve)</option>
+                    <option value="@EdgeStyle.Arc">Arc (Single Curve)</option>
+                    <option value="@EdgeStyle.Stylized">Stylized (Fancy)</option>
+                </select>
+            </div>
+
+            @* Visual preview of connector styles *@
+            <div class="connector-preview">
+                <svg viewBox="0 0 280 40" style="width:100%;height:40px;">
+                    @if (editEdgeStyle == EdgeStyle.Direct)
+                    {
+                        <circle cx="20" cy="20" r="6" fill="#3b82f6"/>
+                        <line x1="26" y1="20" x2="254" y2="20" stroke="#374151" stroke-width="2"/>
+                        <circle cx="260" cy="20" r="6" fill="#3b82f6"/>
+                        <polygon points="250,15 260,20 250,25" fill="#374151"/>
+                    }
+                    else if (editEdgeStyle == EdgeStyle.Ortho)
+                    {
+                        <circle cx="20" cy="10" r="6" fill="#3b82f6"/>
+                        <path d="M26 10 H140 V30 H254" stroke="#374151" stroke-width="2" fill="none"/>
+                        <circle cx="260" cy="30" r="6" fill="#3b82f6"/>
+                        <polygon points="250,25 260,30 250,35" fill="#374151"/>
+                    }
+                    else if (editEdgeStyle == EdgeStyle.OrthoRound)
+                    {
+                        <circle cx="20" cy="10" r="6" fill="#3b82f6"/>
+                        <path d="M26 10 H130 Q140 10 140 20 V20 Q140 30 150 30 H254" stroke="#374151" stroke-width="2" fill="none"/>
+                        <circle cx="260" cy="30" r="6" fill="#3b82f6"/>
+                        <polygon points="250,25 260,30 250,35" fill="#374151"/>
+                    }
+                    else if (editEdgeStyle == EdgeStyle.Bezier)
+                    {
+                        <circle cx="20" cy="10" r="6" fill="#3b82f6"/>
+                        <path d="M26 10 C80 10, 200 30, 254 30" stroke="#374151" stroke-width="2" fill="none"/>
+                        <circle cx="260" cy="30" r="6" fill="#3b82f6"/>
+                        <polygon points="250,25 260,30 250,35" fill="#374151"/>
+                    }
+                    else if (editEdgeStyle == EdgeStyle.Arc)
+                    {
+                        <circle cx="20" cy="20" r="6" fill="#3b82f6"/>
+                        <path d="M26 20 A120 40 0 0 1 254 20" stroke="#374151" stroke-width="2" fill="none"/>
+                        <circle cx="260" cy="20" r="6" fill="#3b82f6"/>
+                        <polygon points="250,15 260,20 250,25" fill="#374151"/>
+                    }
+                    else if (editEdgeStyle == EdgeStyle.Stylized)
+                    {
+                        <circle cx="20" cy="12" r="6" fill="#3b82f6"/>
+                        <path d="M26 12 Q35 7 38 17 C70 5, 220 35, 254 28" stroke="#374151" stroke-width="2" fill="none"/>
+                        <circle cx="260" cy="28" r="6" fill="#3b82f6"/>
+                        <polygon points="250,23 260,28 250,33" fill="#374151"/>
+                    }
+                </svg>
+            </div>
+
             <div class="panel-row">
                 <label>Line Width:</label>
-                <select @bind="editStrokeWidth" class="edge-dropdown">
+                <select value="@editStrokeWidth" @onchange="@(e => { editStrokeWidth = int.Parse(e.Value?.ToString() ?? "2"); OnEdgePropertyChanged(); })" class="edge-dropdown">
                     <option value="1">1px</option>
                     <option value="2">2px</option>
                     <option value="3">3px</option>
@@ -1095,7 +1256,7 @@ marker-end="url(#arrowhead-@(edge.StrokeColor?.Replace("#", "") ?? "374151"))"
 
             <div class="panel-row">
                 <label>Line Style:</label>
-                <select @bind="editStrokeDashArray" class="edge-dropdown">
+                <select value="@editStrokeDashArray" @onchange="@(e => { editStrokeDashArray = e.Value?.ToString() ?? ""; OnEdgePropertyChanged(); })" class="edge-dropdown">
                     @foreach (var style in lineStyles)
                     {
                         <option value="@style.Key">@style.Value</option>
@@ -1110,7 +1271,7 @@ marker-end="url(#arrowhead-@(edge.StrokeColor?.Replace("#", "") ?? "374151"))"
                     {
                         <button class="color-swatch @(editStrokeColor == color ? "selected" : "")"
                                 style="background-color: @color;"
-                                @onclick="@(() => editStrokeColor = color)">
+                                @onclick="@(() => { editStrokeColor = color; OnEdgePropertyChanged(); })">
                         </button>
                     }
                 </div>
@@ -1118,7 +1279,8 @@ marker-end="url(#arrowhead-@(edge.StrokeColor?.Replace("#", "") ?? "374151"))"
 
             <div class="panel-row">
                 <label class="checkbox-label">
-                    <input type="checkbox" @bind="editIsDoubleLine" />
+                    <input type="checkbox" checked="@editIsDoubleLine" 
+                           @onchange="@(e => { editIsDoubleLine = (bool)(e.Value ?? false); OnEdgePropertyChanged(); })" />
                     Double Line
                 </label>
             </div>
@@ -2331,6 +2493,168 @@ marker-end="url(#arrowhead-@(edge.StrokeColor?.Replace("#", "") ?? "374151"))"
                 color: white;
             }
 
+    /* Toolbar Dropdown Menus */
+    .toolbar-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .toolbar-dropdown .dropdown-trigger {
+        padding: 0.35rem 0.7rem;
+        border: none;
+        border-radius: 0.375rem;
+        background: #e5e7eb;
+        color: #374151;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.85rem;
+    }
+
+    .toolbar-dropdown .dropdown-trigger:hover {
+        background: #d1d5db;
+    }
+
+    .toolbar-dropdown .dropdown-trigger.active {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .toolbar-dropdown .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        min-width: 180px;
+        z-index: 1000;
+        padding: 0.25rem 0;
+        margin-top: 0.25rem;
+    }
+
+    .toolbar-dropdown:hover .dropdown-menu,
+    .toolbar-dropdown:focus-within .dropdown-menu {
+        display: block;
+    }
+
+    .toolbar-dropdown .dropdown-menu button {
+        display: block;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        border: none;
+        background: transparent;
+        color: #374151;
+        text-align: left;
+        cursor: pointer;
+        font-size: 0.85rem;
+    }
+
+    .toolbar-dropdown .dropdown-menu button:hover {
+        background: #f3f4f6;
+    }
+
+    .toolbar-dropdown .dropdown-menu button.active {
+        background: #eff6ff;
+        color: #3b82f6;
+    }
+
+    .toolbar-dropdown .dropdown-menu button.btn-danger {
+        color: #dc2626;
+    }
+
+    .toolbar-dropdown .dropdown-menu button.btn-danger:hover {
+        background: #fef2f2;
+    }
+
+    .dropdown-divider {
+        height: 1px;
+        background: #e5e7eb;
+        margin: 0.25rem 0;
+    }
+
+    .dropdown-submenu {
+        padding: 0.5rem 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .dropdown-submenu .submenu-label {
+        display: block;
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+        margin-top: 0.5rem;
+    }
+
+    .dropdown-submenu .submenu-label:first-child {
+        margin-top: 0;
+    }
+
+    .dropdown-select {
+        width: 100%;
+        padding: 0.35rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+    }
+
+    .dropdown-menu-wide {
+        min-width: 280px;
+    }
+
+    .dropdown-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .dropdown-row .submenu-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        min-width: 70px;
+    }
+
+    .dropdown-row button {
+        padding: 0.35rem 0.5rem !important;
+        min-width: auto !important;
+        width: auto !important;
+        font-size: 0.8rem !important;
+    }
+
+    .dropdown-menu-right {
+        left: auto;
+        right: 0;
+    }
+
+    .toolbar-right {
+        margin-left: auto;
+    }
+
+    /* Mode Indicator */
+    .mode-indicator {
+        position: fixed;
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #3b82f6;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 2rem;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        z-index: 100;
+    }
+
+    .multi-connect-indicator {
+        background: #8b5cf6;
+    }
+
+    .chain-indicator {
+        background: #3b82f6;
+    }
+
     .shape-selector {
         display: flex;
         align-items: center;
@@ -2889,6 +3213,18 @@ marker-end="url(#arrowhead-@(edge.StrokeColor?.Replace("#", "") ?? "374151"))"
         .panel-buttons button {
             width: 100%;
         }
+
+    .connector-preview {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 8px;
+        margin: 8px 0 12px 0;
+    }
+
+    .connector-preview svg {
+        display: block;
+    }
 
     /* Config sections */
     .config-section {
