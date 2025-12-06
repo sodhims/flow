@@ -1,0 +1,15 @@
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\web.config
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\dfd2wasm.staticwebassets.endpoints.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\publish\dfd2wasm.staticwebassets.endpoints.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\publish\publish\dfd2wasm.staticwebassets.endpoints.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\publish\publish\segmentation-rules.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\publish\publish\wwwroot\sample-data\weather.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\publish\publish\wwwroot\_framework\blazor.boot.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\publish\segmentation-rules.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\publish\wwwroot\sample-data\weather.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\publish\wwwroot\_framework\blazor.boot.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\segmentation-rules.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\wwwroot\sample-data\weather.json
+R:\dfd2wasm\bin\Release\net9.0\publish\publish\wwwroot\_framework\blazor.boot.json
+R:\dfd2wasm\bin\Release\net9.0\publish\segmentation-rules.json
+R:\dfd2wasm\bin\Release\net9.0\publish\web.config
