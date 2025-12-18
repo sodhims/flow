@@ -1,0 +1,364 @@
+@* OptimizationPanel.razor - Add this as a component or embed in DFDEditor.razor *@
+
+@using dfd2wasm.Services
+
+<div class="optimization-panel @(IsExpanded ? "expanded" : "collapsed")">
+    <div class="panel-header" @onclick="() => IsExpanded = !IsExpanded">
+        <span>🧠 Optimization Settings</span>
+        <span class="expand-icon">@(IsExpanded ? "▼" : "▶")</span>
+    </div>
+    
+    @if (IsExpanded)
+    {
+        <div class="panel-content">
+            @* Flow Direction *@
+            <div class="setting-group">
+                <label>Preferred Flow Direction</label>
+                <select @bind="PreferredFlow">
+                    <option value="@LayoutOptimizerService.FlowDirection.TopDown">↓ Top to Bottom</option>
+                    <option value="@LayoutOptimizerService.FlowDirection.LeftRight">→ Left to Right</option>
+                    <option value="@LayoutOptimizerService.FlowDirection.BottomUp">↑ Bottom to Top</option>
+                    <option value="@LayoutOptimizerService.FlowDirection.RightLeft">← Right to Left</option>
+                </select>
+            </div>
+
+            @* Simulated Annealing Parameters *@
+            <div class="setting-section">
+                <h4>🔥 Simulated Annealing</h4>
+                
+                <div class="setting-group">
+                    <label>Initial Temperature: @Config.InitialTemperature</label>
+                    <input type="range" min="100" max="5000" step="100" @bind="Config.InitialTemperature" />
+                    <span class="hint">Higher = more exploration</span>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Cooling Rate: @Config.CoolingRate.ToString("F3")</label>
+                    <input type="range" min="0.9" max="0.999" step="0.001" @bind="Config.CoolingRate" />
+                    <span class="hint">Higher = slower cooling</span>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Max Iterations: @Config.MaxIterations</label>
+                    <input type="range" min="1000" max="20000" step="500" @bind="Config.MaxIterations" />
+                </div>
+                
+                <div class="setting-group">
+                    <label>Early Stop (no improvement): @Config.MaxNoImprovement</label>
+                    <input type="range" min="100" max="2000" step="100" @bind="Config.MaxNoImprovement" />
+                </div>
+            </div>
+
+            @* Fitness Weights *@
+            <div class="setting-section">
+                <h4>⚖️ Fitness Weights</h4>
+                
+                <div class="setting-group">
+                    <label>Overlap Penalty: @Weights.OverlapPenalty</label>
+                    <input type="range" min="0" max="2000" step="50" @bind="Weights.OverlapPenalty" />
+                </div>
+                
+                <div class="setting-group">
+                    <label>Edge Crossing Penalty: @Weights.EdgeCrossingPenalty</label>
+                    <input type="range" min="0" max="500" step="10" @bind="Weights.EdgeCrossingPenalty" />
+                </div>
+                
+                <div class="setting-group">
+                    <label>Upward Edge Penalty: @Weights.UpwardEdgePenalty</label>
+                    <input type="range" min="0" max="100" step="5" @bind="Weights.UpwardEdgePenalty" />
+                </div>
+                
+                <div class="setting-group">
+                    <label>Edge Length Weight: @Weights.EdgeLengthWeight</label>
+                    <input type="range" min="0" max="10" step="0.5" @bind="Weights.EdgeLengthWeight" />
+                </div>
+                
+                <div class="setting-group">
+                    <label>Alignment Bonus: @Weights.AlignmentBonus</label>
+                    <input type="range" min="0" max="50" step="2" @bind="Weights.AlignmentBonus" />
+                </div>
+            </div>
+
+            @* Optimization Actions *@
+            <div class="setting-section">
+                <h4>🎯 Run Optimization</h4>
+                
+                <div class="button-group">
+                    <button class="opt-btn" @onclick="OptimizeFlow" disabled="@IsOptimizing">
+                        ↓ Flow Direction
+                    </button>
+                    <button class="opt-btn" @onclick="OptimizePlacement" disabled="@IsOptimizing">
+                        📍 Node Placement
+                    </button>
+                    <button class="opt-btn" @onclick="OptimizeConnections" disabled="@IsOptimizing">
+                        🔗 Edge Connections
+                    </button>
+                </div>
+                
+                <button class="opt-btn primary" @onclick="OptimizeAll" disabled="@IsOptimizing">
+                    @if (IsOptimizing)
+                    {
+                        <span>⏳ @Progress% - @CurrentPhase</span>
+                    }
+                    else
+                    {
+                        <span>🚀 Optimize All</span>
+                    }
+                </button>
+                
+                @if (!string.IsNullOrEmpty(ResultMessage))
+                {
+                    <div class="result-message">@ResultMessage</div>
+                }
+            </div>
+
+            @* Presets *@
+            <div class="setting-section">
+                <h4>📋 Presets</h4>
+                <div class="button-group">
+                    <button class="preset-btn" @onclick="ApplyQuickPreset">⚡ Quick</button>
+                    <button class="preset-btn" @onclick="ApplyBalancedPreset">⚖️ Balanced</button>
+                    <button class="preset-btn" @onclick="ApplyThoroughPreset">🔬 Thorough</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .optimization-panel {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        margin: 10px;
+        overflow: hidden;
+    }
+    
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 15px;
+        background: #334155;
+        cursor: pointer;
+        font-weight: bold;
+        color: #f1f5f9;
+    }
+    
+    .panel-content {
+        padding: 15px;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .setting-section {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #334155;
+    }
+    
+    .setting-section h4 {
+        margin: 0 0 10px 0;
+        color: #94a3b8;
+        font-size: 0.9em;
+    }
+    
+    .setting-group {
+        margin-bottom: 12px;
+    }
+    
+    .setting-group label {
+        display: block;
+        color: #cbd5e1;
+        font-size: 0.85em;
+        margin-bottom: 4px;
+    }
+    
+    .setting-group input[type="range"] {
+        width: 100%;
+        accent-color: #3b82f6;
+    }
+    
+    .setting-group select {
+        width: 100%;
+        padding: 6px;
+        background: #1e293b;
+        border: 1px solid #475569;
+        color: #f1f5f9;
+        border-radius: 4px;
+    }
+    
+    .hint {
+        font-size: 0.75em;
+        color: #64748b;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+    
+    .opt-btn {
+        flex: 1;
+        min-width: 100px;
+        padding: 8px 12px;
+        background: #475569;
+        border: none;
+        border-radius: 4px;
+        color: #f1f5f9;
+        cursor: pointer;
+        font-size: 0.85em;
+    }
+    
+    .opt-btn:hover:not(:disabled) {
+        background: #64748b;
+    }
+    
+    .opt-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .opt-btn.primary {
+        background: #3b82f6;
+        width: 100%;
+    }
+    
+    .opt-btn.primary:hover:not(:disabled) {
+        background: #2563eb;
+    }
+    
+    .preset-btn {
+        flex: 1;
+        padding: 6px 10px;
+        background: #1e40af;
+        border: none;
+        border-radius: 4px;
+        color: #f1f5f9;
+        cursor: pointer;
+        font-size: 0.8em;
+    }
+    
+    .preset-btn:hover {
+        background: #1d4ed8;
+    }
+    
+    .result-message {
+        margin-top: 10px;
+        padding: 8px;
+        background: #065f46;
+        border-radius: 4px;
+        color: #a7f3d0;
+        font-size: 0.85em;
+    }
+</style>
+
+@code {
+    [Parameter] public List<Node> Nodes { get; set; } = new();
+    [Parameter] public List<Edge> Edges { get; set; } = new();
+    [Parameter] public EventCallback<(List<Node>, List<Edge>)> OnOptimizationComplete { get; set; }
+    
+    private bool IsExpanded { get; set; } = false;
+    private bool IsOptimizing { get; set; } = false;
+    private int Progress { get; set; } = 0;
+    private string CurrentPhase { get; set; } = "";
+    private string ResultMessage { get; set; } = "";
+    
+    private LayoutOptimizerService.FlowDirection PreferredFlow { get; set; } = 
+        LayoutOptimizerService.FlowDirection.TopDown;
+    
+    private LayoutOptimizerService.AnnealingConfig Config { get; set; } = new();
+    private LayoutOptimizerService.FitnessWeights Weights { get; set; } = new();
+    
+    [Inject] private LayoutOptimizerService Optimizer { get; set; } = default!;
+    
+    private async Task OptimizeFlow()
+    {
+        IsOptimizing = true;
+        ResultMessage = "";
+        
+        var (nodes, improvement) = Optimizer.OptimizeFlowDirection(Nodes, Edges, PreferredFlow, Weights);
+        
+        await OnOptimizationComplete.InvokeAsync((nodes, Edges));
+        ResultMessage = $"Flow: {improvement:F1}% improvement";
+        
+        IsOptimizing = false;
+    }
+    
+    private async Task OptimizePlacement()
+    {
+        IsOptimizing = true;
+        ResultMessage = "";
+        
+        var (nodes, improvement) = await Optimizer.OptimizeNodePlacement(
+            Nodes, Edges, Config, Weights,
+            (iter, fitness, phase) => {
+                Progress = (int)((iter / (double)Config.MaxIterations) * 100);
+                CurrentPhase = phase;
+                StateHasChanged();
+            });
+        
+        await OnOptimizationComplete.InvokeAsync((nodes, Edges));
+        ResultMessage = $"Placement: {improvement:F1}% improvement";
+        
+        IsOptimizing = false;
+    }
+    
+    private async Task OptimizeConnections()
+    {
+        IsOptimizing = true;
+        ResultMessage = "";
+        
+        var (edges, improvement) = Optimizer.OptimizeEdgeConnections(Nodes, Edges, Weights);
+        
+        await OnOptimizationComplete.InvokeAsync((Nodes, edges));
+        ResultMessage = $"Connections: {improvement:F1}% improvement";
+        
+        IsOptimizing = false;
+    }
+    
+    private async Task OptimizeAll()
+    {
+        IsOptimizing = true;
+        ResultMessage = "";
+        
+        var result = await Optimizer.OptimizeAll(
+            Nodes, Edges, Config, Weights, PreferredFlow,
+            (iter, fitness, phase) => {
+                Progress = (int)((iter / (double)Config.MaxIterations) * 100);
+                CurrentPhase = phase;
+                StateHasChanged();
+            });
+        
+        await OnOptimizationComplete.InvokeAsync((result.OptimizedNodes, result.OptimizedEdges));
+        ResultMessage = $"Total: {result.TotalImprovement:F1}% (Flow: {result.FlowImprovement:F1}%, " +
+                        $"Placement: {result.PlacementImprovement:F1}%, Connections: {result.ConnectionImprovement:F1}%)";
+        
+        IsOptimizing = false;
+    }
+    
+    private void ApplyQuickPreset()
+    {
+        Config.InitialTemperature = 500;
+        Config.CoolingRate = 0.99;
+        Config.MaxIterations = 1000;
+        Config.MaxNoImprovement = 200;
+    }
+    
+    private void ApplyBalancedPreset()
+    {
+        Config.InitialTemperature = 1000;
+        Config.CoolingRate = 0.995;
+        Config.MaxIterations = 5000;
+        Config.MaxNoImprovement = 500;
+    }
+    
+    private void ApplyThoroughPreset()
+    {
+        Config.InitialTemperature = 2000;
+        Config.CoolingRate = 0.998;
+        Config.MaxIterations = 15000;
+        Config.MaxNoImprovement = 1000;
+    }
+}
