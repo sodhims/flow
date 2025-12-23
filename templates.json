@@ -1,0 +1,57 @@
+{
+  "description": "Template configuration for DFD Editor. Set \u0027enabled\u0027 to false to hide a template.",
+  "templates": {
+    "circuit": {
+      "enabled": false,
+      "displayName": "Circuit Diagram"
+    },
+    "flowchart": {
+      "enabled": true,
+      "displayName": "Flowchart"
+    },
+    "icd": {
+      "enabled": false,
+      "displayName": "Interface Control"
+    },
+    "network": {
+      "enabled": false,
+      "displayName": "Network Diagram"
+    },
+    "bpmn": {
+      "enabled": false,
+      "displayName": "BPMN"
+    },
+    "sts": {
+      "enabled": false,
+      "displayName": "STS (Source-Terminal-Sink)"
+    },
+    "fmeca": {
+      "enabled": false,
+      "displayName": "FMECA (Shipyard)"
+    }
+  },
+  "presets": {
+    "all": [
+      "circuit",
+      "flowchart",
+      "icd",
+      "network",
+      "bpmn",
+      "sts",
+      "fmeca"
+    ],
+    "engineering": [
+      "circuit",
+      "icd",
+      "network",
+      "fmeca"
+    ],
+    "business": [
+      "flowchart",
+      "bpmn"
+    ],
+    "minimal": [
+      "flowchart"
+    ]
+  }
+}
