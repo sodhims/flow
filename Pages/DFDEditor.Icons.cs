@@ -180,5 +180,89 @@ public partial class DFDEditor
                 builder.CloseElement();
             }
         }
+
+        // Render attachments indicator if node has attachments
+        if (node.Attachments?.Any() == true)
+        {
+            var attachCount = node.Attachments.Count;
+            var badgeX = node.Width - 18;
+            var badgeY = 4;
+
+            // Background circle
+            builder.OpenElement(seq++, "circle");
+            builder.AddAttribute(seq++, "cx", (badgeX + 7).ToString());
+            builder.AddAttribute(seq++, "cy", (badgeY + 7).ToString());
+            builder.AddAttribute(seq++, "r", "9");
+            builder.AddAttribute(seq++, "fill", "#3b82f6");
+            builder.AddAttribute(seq++, "stroke", "white");
+            builder.AddAttribute(seq++, "stroke-width", "1");
+            builder.CloseElement();
+
+            // Attachment count text
+            builder.OpenElement(seq++, "text");
+            builder.AddAttribute(seq++, "x", (badgeX + 7).ToString());
+            builder.AddAttribute(seq++, "y", (badgeY + 8).ToString());
+            builder.AddAttribute(seq++, "text-anchor", "middle");
+            builder.AddAttribute(seq++, "dominant-baseline", "middle");
+            builder.AddAttribute(seq++, "fill", "white");
+            builder.AddAttribute(seq++, "font-size", "10");
+            builder.AddAttribute(seq++, "font-weight", "bold");
+            builder.AddAttribute(seq++, "style", "pointer-events: none;");
+            builder.AddContent(seq++, attachCount.ToString());
+            builder.CloseElement();
+        }
+    };
+
+    // Render attachments for a node (called when node is selected and expanded)
+    private RenderFragment RenderNodeAttachments(Node node) => builder =>
+    {
+        if (node.Attachments == null || !node.Attachments.Any()) return;
+
+        int seq = 0;
+        var startY = node.Height + 5;
+        var attachmentHeight = 30;
+        var padding = 4;
+
+        foreach (var att in node.Attachments)
+        {
+            if (att.FileType == AttachmentType.Svg)
+            {
+                // Render SVG image directly
+                builder.OpenElement(seq++, "image");
+                builder.AddAttribute(seq++, "x", padding.ToString());
+                builder.AddAttribute(seq++, "y", startY.ToString());
+                builder.AddAttribute(seq++, "width", (node.Width - padding * 2).ToString());
+                builder.AddAttribute(seq++, "height", attachmentHeight.ToString());
+                builder.AddAttribute(seq++, "href", att.DataUri);
+                builder.AddAttribute(seq++, "preserveAspectRatio", "xMidYMid meet");
+                builder.CloseElement();
+            }
+            else if (att.FileType == AttachmentType.Pdf)
+            {
+                // Render PDF placeholder with link
+                builder.OpenElement(seq++, "rect");
+                builder.AddAttribute(seq++, "x", padding.ToString());
+                builder.AddAttribute(seq++, "y", startY.ToString());
+                builder.AddAttribute(seq++, "width", (node.Width - padding * 2).ToString());
+                builder.AddAttribute(seq++, "height", attachmentHeight.ToString());
+                builder.AddAttribute(seq++, "fill", "#fef3c7");
+                builder.AddAttribute(seq++, "stroke", "#f59e0b");
+                builder.AddAttribute(seq++, "rx", "4");
+                builder.CloseElement();
+
+                // PDF icon text
+                builder.OpenElement(seq++, "text");
+                builder.AddAttribute(seq++, "x", (node.Width / 2).ToString());
+                builder.AddAttribute(seq++, "y", (startY + attachmentHeight / 2).ToString());
+                builder.AddAttribute(seq++, "text-anchor", "middle");
+                builder.AddAttribute(seq++, "dominant-baseline", "middle");
+                builder.AddAttribute(seq++, "fill", "#92400e");
+                builder.AddAttribute(seq++, "font-size", "11");
+                builder.AddContent(seq++, $"📄 {att.FileName}");
+                builder.CloseElement();
+            }
+
+            startY += attachmentHeight + 4;
+        }
     };
 }

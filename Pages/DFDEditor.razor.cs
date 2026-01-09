@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using dfd2wasm.Models;
@@ -1112,8 +1113,84 @@ private void ToggleChainMode()
         {
             RecalculateEdgePaths(node.Id);
         }
-        
+
         StateHasChanged();
+    }
+
+    // Attachment handling methods
+    private async Task HandleAttachmentUpload(InputFileChangeEventArgs e)
+    {
+        if (selectedNodes.Count != 1) return;
+        var selectedNode = nodes.FirstOrDefault(n => n.Id == selectedNodes.First());
+        if (selectedNode == null) return;
+
+        var file = e.File;
+        if (file == null) return;
+
+        // Determine file type
+        var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+        AttachmentType fileType;
+        string mimeType;
+
+        switch (extension)
+        {
+            case ".svg":
+                fileType = AttachmentType.Svg;
+                mimeType = "image/svg+xml";
+                break;
+            case ".pdf":
+                fileType = AttachmentType.Pdf;
+                mimeType = "application/pdf";
+                break;
+            default:
+                return; // Unsupported file type
+        }
+
+        // Read file content as Base64
+        const long maxFileSize = 5 * 1024 * 1024; // 5MB limit
+        using var stream = file.OpenReadStream(maxFileSize);
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        var base64 = Convert.ToBase64String(memoryStream.ToArray());
+        var dataUri = $"data:{mimeType};base64,{base64}";
+
+        // Create attachment
+        var attachment = new NodeAttachment
+        {
+            FileName = file.Name,
+            FileType = fileType,
+            DataUri = dataUri
+        };
+
+        // Add to node
+        selectedNode.Attachments ??= new List<NodeAttachment>();
+        selectedNode.Attachments.Add(attachment);
+
+        StateHasChanged();
+    }
+
+    private void RemoveAttachment(Node node, string attachmentId)
+    {
+        if (node.Attachments == null) return;
+        node.Attachments.RemoveAll(a => a.Id == attachmentId);
+        if (node.Attachments.Count == 0)
+            node.Attachments = null;
+        StateHasChanged();
+    }
+
+    private static string TruncateFileName(string fileName, int maxLength)
+    {
+        if (string.IsNullOrEmpty(fileName) || fileName.Length <= maxLength)
+            return fileName;
+
+        var extension = Path.GetExtension(fileName);
+        var name = Path.GetFileNameWithoutExtension(fileName);
+        var availableLength = maxLength - extension.Length - 3; // 3 for "..."
+
+        if (availableLength <= 0)
+            return fileName[..maxLength];
+
+        return name[..Math.Min(availableLength, name.Length)] + "..." + extension;
     }
 }
 

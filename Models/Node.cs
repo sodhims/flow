@@ -22,6 +22,27 @@ public class Node
     public string? ComponentLabel { get; set; }
     // Component value (e.g., "10kΩ", "100µF", "5V")
     public string? ComponentValue { get; set; }
+    // Attachments (SVG/PDF files embedded as data URIs)
+    public List<NodeAttachment>? Attachments { get; set; }
+}
+
+/// <summary>
+/// Represents an attached file (SVG or PDF) embedded in a node
+/// </summary>
+public class NodeAttachment
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N")[..8];
+    public string FileName { get; set; } = string.Empty;
+    public AttachmentType FileType { get; set; }
+    public string DataUri { get; set; } = string.Empty;  // Base64-encoded data URI
+    public double DisplayWidth { get; set; } = 80;
+    public double DisplayHeight { get; set; } = 80;
+}
+
+public enum AttachmentType
+{
+    Svg,
+    Pdf
 }
 public enum NodeShape
 {

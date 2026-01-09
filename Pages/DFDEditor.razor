@@ -1453,6 +1453,29 @@
                                         }
                                     </div>
                                 </div>
+                                <div class="attachment-section">
+                                    <label>Attachments (SVG/PDF)</label>
+                                    <div class="attachment-upload">
+                                        <InputFile OnChange="HandleAttachmentUpload" accept=".svg,.pdf" />
+                                    </div>
+                                    @if (selectedNode.Attachments?.Any() == true)
+                                    {
+                                        <div class="attachment-list">
+                                            @foreach (var att in selectedNode.Attachments)
+                                            {
+                                                <div class="attachment-item">
+                                                    <span class="attachment-icon">@(att.FileType == AttachmentType.Svg ? "🖼️" : "📄")</span>
+                                                    <span class="attachment-name" title="@att.FileName">@TruncateFileName(att.FileName, 15)</span>
+                                                    <button class="attachment-delete" @onclick="@(() => RemoveAttachment(selectedNode, att.Id))" title="Remove">✕</button>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="attachment-empty">No attachments</div>
+                                    }
+                                </div>
                             </div>
                         }
                     </div>

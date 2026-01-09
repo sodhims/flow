@@ -13,6 +13,30 @@
   <Compile Remove="dfd2wasm.Tests\**" />
   <Content Remove="dfd2wasm.Tests\**" />
   <None Remove="dfd2wasm.Tests\**" />
+  <Compile Remove="dfd2wasm.PlaywrightTests\**" />
+  <Content Remove="dfd2wasm.PlaywrightTests\**" />
+  <None Remove="dfd2wasm.PlaywrightTests\**" />
+  <Compile Remove="GanttSolver\**" />
+  <Content Remove="GanttSolver\**" />
+  <None Remove="GanttSolver\**" />
+  <Compile Remove="GanttSand\**" />
+  <Content Remove="GanttSand\**" />
+  <None Remove="GanttSand\**" />
+  <Compile Remove="JobShopSolver\**" />
+  <Content Remove="JobShopSolver\**" />
+  <None Remove="JobShopSolver\**" />
+  <Compile Remove="JobShopSolver.Api\**" />
+  <Content Remove="JobShopSolver.Api\**" />
+  <None Remove="JobShopSolver.Api\**" />
+  <Compile Remove="SimMaker\**" />
+  <Content Remove="SimMaker\**" />
+  <None Remove="SimMaker\**" />
+  <Compile Remove="SimMaker.PlaywrightTests\**" />
+  <Content Remove="SimMaker.PlaywrightTests\**" />
+  <None Remove="SimMaker.PlaywrightTests\**" />
+  <Compile Remove="DFDEditor.Launcher\**" />
+  <Content Remove="DFDEditor.Launcher\**" />
+  <None Remove="DFDEditor.Launcher\**" />
 </ItemGroup>
 
   <!-- Restored DFDEditor.razor to allow scoped css to bind to component -->
