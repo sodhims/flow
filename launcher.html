@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DFD Editor - Template Launcher</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        .subtitle {
+            color: #888;
+            margin-bottom: 2rem;
+        }
+        .presets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 900px;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+        .preset-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        .preset-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .preset-card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #4fc3f7;
+        }
+        .preset-card p {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 1rem;
+        }
+        .preset-card .templates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .preset-card .template-tag {
+            background: rgba(79, 195, 247, 0.15);
+            color: #4fc3f7;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+        .custom-section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-width: 900px;
+            width: 100%;
+        }
+        .custom-section h3 {
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+        .template-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .template-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+        .template-checkbox input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .launch-btn {
+            background: #4fc3f7;
+            color: #1a1a2e;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .launch-btn:hover {
+            background: #81d4fa;
+        }
+        .launch-btn:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+        }
+        .url-preview {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #888;
+            word-break: break-all;
+        }
+        footer {
+            margin-top: 2rem;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        footer a {
+            color: #4fc3f7;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>DFD Editor</h1>
+    <p class="subtitle">Select a template preset or customize your own</p>
+
+    <div class="presets">
+        <a href="./?preset=all" class="preset-card">
+            <h2>All Templates</h2>
+            <p>Full access to all diagram types</p>
+            <div class="templates">
+                <span class="template-tag">Circuit</span>
+                <span class="template-tag">Flowchart</span>
+                <span class="template-tag">ICD</span>
+                <span class="template-tag">Network</span>
+                <span class="template-tag">BPMN</span>
+                <span class="template-tag">STS</span>
+            </div>
+        </a>
+
+        <a href="./?preset=engineering" class="preset-card">
+            <h2>Engineering</h2>
+            <p>Technical diagrams for engineers</p>
+            <div class="templates">
+                <span class="template-tag">Circuit</span>
+                <span class="template-tag">ICD</span>
+                <span class="template-tag">Network</span>
+            </div>
+        </a>
+
+        <a href="./?preset=business" class="preset-card">
+            <h2>Business Process</h2>
+            <p>Process and workflow diagrams</p>
+            <div class="templates">
+                <span class="template-tag">Flowchart</span>
+                <span class="template-tag">BPMN</span>
+            </div>
+        </a>
+
+        <a href="./?templates=circuit" class="preset-card">
+            <h2>Circuit Only</h2>
+            <p>Electronic circuit design</p>
+            <div class="templates">
+                <span class="template-tag">Circuit</span>
+            </div>
+        </a>
+
+        <a href="./?templates=flowchart" class="preset-card">
+            <h2>Flowchart Only</h2>
+            <p>Simple flowcharts</p>
+            <div class="templates">
+                <span class="template-tag">Flowchart</span>
+            </div>
+        </a>
+
+        <a href="./?templates=sts" class="preset-card">
+            <h2>STS Only</h2>
+            <p>Source-Terminal-Sink diagrams</p>
+            <div class="templates">
+                <span class="template-tag">STS</span>
+            </div>
+        </a>
+    </div>
+
+    <div class="custom-section">
+        <h3>Custom Selection</h3>
+        <div class="template-checkboxes">
+            <label class="template-checkbox">
+                <input type="checkbox" value="circuit" checked> Circuit
+            </label>
+            <label class="template-checkbox">
+                <input type="checkbox" value="flowchart" checked> Flowchart
+            </label>
+            <label class="template-checkbox">
+                <input type="checkbox" value="icd"> ICD
+            </label>
+            <label class="template-checkbox">
+                <input type="checkbox" value="network"> Network
+            </label>
+            <label class="template-checkbox">
+                <input type="checkbox" value="bpmn"> BPMN
+            </label>
+            <label class="template-checkbox">
+                <input type="checkbox" value="sts"> STS
+            </label>
+        </div>
+        <button class="launch-btn" onclick="launchCustom()">Launch Editor</button>
+        <div class="url-preview" id="urlPreview">./?templates=circuit,flowchart</div>
+    </div>
+
+    <footer>
+        <p>Or go directly to <a href="./">the editor</a> with all templates enabled</p>
+    </footer>
+
+    <script>
+        const checkboxes = document.querySelectorAll('.template-checkbox input');
+        const urlPreview = document.getElementById('urlPreview');
+        const launchBtn = document.querySelector('.launch-btn');
+
+        function updatePreview() {
+            const selected = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            if (selected.length === 0) {
+                urlPreview.textContent = '(select at least one template)';
+                launchBtn.disabled = true;
+            } else if (selected.length === 6) {
+                urlPreview.textContent = './?preset=all';
+                launchBtn.disabled = false;
+            } else {
+                urlPreview.textContent = './?templates=' + selected.join(',');
+                launchBtn.disabled = false;
+            }
+        }
+
+        checkboxes.forEach(cb => cb.addEventListener('change', updatePreview));
+        updatePreview();
+
+        function launchCustom() {
+            const selected = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+
+            if (selected.length === 0) return;
+
+            if (selected.length === 6) {
+                window.location.href = './?preset=all';
+            } else {
+                window.location.href = './?templates=' + selected.join(',');
+            }
+        }
+    </script>
+</body>
+</html>
