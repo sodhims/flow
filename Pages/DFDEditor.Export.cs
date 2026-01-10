@@ -102,6 +102,26 @@ public partial class DFDEditor
 
     #endregion
 
+    #region SVG Export
+
+    private async Task ExportToSVG()
+    {
+        try
+        {
+            var svgContent = ExportService.ExportToSVG(nodes, edges, edgeLabels,
+                canvasBackground, swimlaneCount, swimlaneLabels,
+                columnCount, columnLabels);
+
+            await JSRuntime.InvokeVoidAsync("downloadFile", "diagram.svg", svgContent);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error exporting to SVG: {ex.Message}");
+        }
+    }
+
+    #endregion
+
     #region Print/PDF
 
     private void TogglePrintAreaSelection()
