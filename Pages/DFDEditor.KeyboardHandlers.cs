@@ -72,6 +72,40 @@ public partial class DFDEditor
             return;
         }
 
+        // Mode shortcuts (only when not using Ctrl/Alt modifiers)
+        if (!e.CtrlKey && !e.AltKey)
+        {
+            switch (e.Key.ToLowerInvariant())
+            {
+                case "s":
+                    mode = Models.EditorMode.Select;
+                    chainMode = false;
+                    connectionMode = ConnectionModeType.Normal;
+                    ClearOneToNState();
+                    StateHasChanged();
+                    return;
+                case "a":
+                    mode = Models.EditorMode.AddNode;
+                    chainMode = false;
+                    multiConnectMode = false;
+                    ClearMultiConnectState();
+                    StateHasChanged();
+                    return;
+                case "c":
+                    // Toggle chain connect mode
+                    mode = Models.EditorMode.Select;
+                    chainMode = !chainMode;
+                    if (chainMode)
+                    {
+                        connectionMode = ConnectionModeType.Normal;
+                        ClearOneToNState();
+                    }
+                    lastChainedNodeId = null;
+                    StateHasChanged();
+                    return;
+            }
+        }
+
         // Arrow keys - nudge selected nodes
         if (selectedNodes.Any())
         {
