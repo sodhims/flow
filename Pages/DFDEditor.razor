@@ -1934,6 +1934,11 @@
                                             <button type="button" style="padding: 2px 6px; font-size: 10px; background: #dbeafe; border: 1px solid #93c5fd; border-radius: 3px; cursor: pointer;"
                                                     @onclick="@(() => PlaceAttachmentOnCanvas(editNode, att))" title="Place on canvas">📍</button>
                                         }
+                                        @if (att.FileType == AttachmentType.Pdf)
+                                        {
+                                            <button type="button" style="padding: 2px 6px; font-size: 10px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 3px; cursor: pointer;"
+                                                    @onclick="@(() => OpenPdfAttachment(att))" title="View PDF">👁️</button>
+                                        }
                                         <button type="button" style="padding: 2px 6px; font-size: 10px; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 3px; cursor: pointer;"
                                                 @onclick="@(() => RemoveAttachment(editNode, att.Id))" title="Remove">✕</button>
                                     </div>

@@ -777,6 +777,9 @@ private void SetConnectionMode(ConnectionModeType newMode)
             // Initialize viewport size for minimap
             await Task.Delay(100);
             await HandleCanvasScroll();
+
+            // Initialize PDF click handler for in-node PDF icons
+            await JS.InvokeVoidAsync("initPdfClickHandler");
         }
     }
 
@@ -1295,6 +1298,13 @@ private void ToggleChainMode()
         selectedNodes.Add(newNode.Id);
 
         StateHasChanged();
+    }
+
+    // Open a PDF attachment in a new browser tab
+    private async Task OpenPdfAttachment(NodeAttachment attachment)
+    {
+        if (attachment.FileType != AttachmentType.Pdf) return;
+        await JS.InvokeVoidAsync("openPdfViewer", attachment.DataUri);
     }
 }
 

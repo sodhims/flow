@@ -155,6 +155,94 @@ public partial class DFDEditor
             return; // Don't render icon/normal text when SVG is displayed
         }
 
+        // Check if node has PDF attachments to render as clickable icon
+        var pdfAttachment = node.Attachments?.FirstOrDefault(a => a.FileType == AttachmentType.Pdf);
+        if (pdfAttachment != null)
+        {
+            var padding = 8.0;
+            var iconSize = Math.Min(node.Width, node.Height) - padding * 2 - 20; // Leave room for text
+            iconSize = Math.Max(iconSize, 40); // Minimum icon size
+            var iconX = (node.Width - iconSize) / 2;
+            var iconY = padding;
+
+            var hasText = !string.IsNullOrWhiteSpace(node.Text);
+            if (!hasText)
+            {
+                iconY = (node.Height - iconSize) / 2;
+            }
+
+            // PDF icon background (red document shape)
+            builder.OpenElement(seq++, "g");
+            builder.AddAttribute(seq++, "class", "pdf-icon");
+            builder.AddAttribute(seq++, "data-pdf-uri", pdfAttachment.DataUri);
+            builder.AddAttribute(seq++, "style", "cursor: pointer;");
+
+            // Document body
+            builder.OpenElement(seq++, "rect");
+            builder.AddAttribute(seq++, "x", iconX.ToString());
+            builder.AddAttribute(seq++, "y", iconY.ToString());
+            builder.AddAttribute(seq++, "width", iconSize.ToString());
+            builder.AddAttribute(seq++, "height", iconSize.ToString());
+            builder.AddAttribute(seq++, "rx", "4");
+            builder.AddAttribute(seq++, "fill", "#dc2626");
+            builder.AddAttribute(seq++, "stroke", "#991b1b");
+            builder.AddAttribute(seq++, "stroke-width", "1");
+            builder.CloseElement();
+
+            // Folded corner
+            var cornerSize = iconSize * 0.25;
+            builder.OpenElement(seq++, "path");
+            builder.AddAttribute(seq++, "d", $"M {iconX + iconSize - cornerSize} {iconY} L {iconX + iconSize} {iconY + cornerSize} L {iconX + iconSize - cornerSize} {iconY + cornerSize} Z");
+            builder.AddAttribute(seq++, "fill", "#fecaca");
+            builder.CloseElement();
+
+            // PDF text
+            var fontSize = iconSize * 0.25;
+            builder.OpenElement(seq++, "text");
+            builder.AddAttribute(seq++, "x", (iconX + iconSize / 2).ToString());
+            builder.AddAttribute(seq++, "y", (iconY + iconSize / 2 + fontSize * 0.35).ToString());
+            builder.AddAttribute(seq++, "text-anchor", "middle");
+            builder.AddAttribute(seq++, "fill", "white");
+            builder.AddAttribute(seq++, "font-size", fontSize.ToString());
+            builder.AddAttribute(seq++, "font-weight", "bold");
+            builder.AddAttribute(seq++, "style", "pointer-events: none;");
+            builder.AddContent(seq++, "PDF");
+            builder.CloseElement();
+
+            // Click hint at bottom of icon
+            var hintFontSize = Math.Max(8, iconSize * 0.12);
+            builder.OpenElement(seq++, "text");
+            builder.AddAttribute(seq++, "x", (iconX + iconSize / 2).ToString());
+            builder.AddAttribute(seq++, "y", (iconY + iconSize - hintFontSize * 0.5).ToString());
+            builder.AddAttribute(seq++, "text-anchor", "middle");
+            builder.AddAttribute(seq++, "fill", "white");
+            builder.AddAttribute(seq++, "font-size", hintFontSize.ToString());
+            builder.AddAttribute(seq++, "opacity", "0.8");
+            builder.AddAttribute(seq++, "style", "pointer-events: none;");
+            builder.AddContent(seq++, "Click to view");
+            builder.CloseElement();
+
+            builder.CloseElement(); // g
+
+            // Render text label at bottom if present
+            if (hasText)
+            {
+                var textY = node.Height - 10;
+                builder.OpenElement(seq++, "text");
+                builder.AddAttribute(seq++, "x", (node.Width / 2).ToString());
+                builder.AddAttribute(seq++, "y", textY.ToString());
+                builder.AddAttribute(seq++, "text-anchor", "middle");
+                builder.AddAttribute(seq++, "dominant-baseline", "middle");
+                builder.AddAttribute(seq++, "fill", "#374151");
+                builder.AddAttribute(seq++, "font-size", "12");
+                builder.AddAttribute(seq++, "style", "pointer-events: none; user-select: none;");
+                builder.AddContent(seq++, node.Text);
+                builder.CloseElement();
+            }
+
+            return; // Don't render icon/normal text when PDF is displayed
+        }
+
         // Check if node has an icon
         var hasIcon = !string.IsNullOrEmpty(node.Icon) && IconLibrary.ContainsKey(node.Icon);
 
