@@ -1040,56 +1040,61 @@
                     }
                     else if (currentNode.Shape == NodeShape.Rectangle)
                     {
+                        var nodeStrokeWidth = currentNode.StrokeWidth ?? 2;
                         <rect x="0" y="0"
                               width="@currentNode.Width"
                               height="@currentNode.Height"
                               fill="@(currentNode.FillColor ?? "white")"
-                              stroke="@(selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor)"
-                              stroke-width="@(selectedNodes.Contains(nodeId) ? "3" : "2")"
+                              stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
+                              stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)"
                               rx="4"
                               style="cursor: @(mode == EditorMode.Select ? "move" : "pointer");" />
                     }
                     else if (currentNode.Shape == NodeShape.Ellipse)
                     {
+                        var nodeStrokeWidth = currentNode.StrokeWidth ?? 2;
                         <ellipse cx="@(currentNode.Width / 2)"
                                  cy="@(currentNode.Height / 2)"
                                  rx="@(currentNode.Width / 2)"
                                  ry="@(currentNode.Height / 2)"
                                  fill="@(currentNode.FillColor ?? "white")"
-                                 stroke="@(selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor)"
-                                 stroke-width="@(selectedNodes.Contains(nodeId) ? "3" : "2")"
+                                 stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
+                                 stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)"
                                  style="cursor: @(mode == EditorMode.Select ? "move" : "pointer");" />
                     }
                     else if (currentNode.Shape == NodeShape.Diamond)
                     {
+                        var nodeStrokeWidth = currentNode.StrokeWidth ?? 2;
                         var midX = currentNode.Width / 2;
                         var midY = currentNode.Height / 2;
                         <polygon points="@midX,0 @currentNode.Width,@midY @midX,@currentNode.Height 0,@midY"
                                  fill="@(currentNode.FillColor ?? "white")"
-                                 stroke="@(selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor)"
-                                 stroke-width="@(selectedNodes.Contains(nodeId) ? "3" : "2")"
+                                 stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
+                                 stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)"
                                  style="cursor: @(mode == EditorMode.Select ? "move" : "pointer");" />
                     }
                     else if (currentNode.Shape == NodeShape.Parallelogram)
                     {
+                        var nodeStrokeWidth = currentNode.StrokeWidth ?? 2;
                         var skew = 15.0;
                         var points = $"{skew},0 {currentNode.Width},0 {currentNode.Width - skew},{currentNode.Height} 0,{currentNode.Height}";
                         <polygon points="@points"
                                  fill="@(currentNode.FillColor ?? "white")"
-                                 stroke="@(selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor)"
-                                 stroke-width="@(selectedNodes.Contains(nodeId) ? "3" : "2")"
+                                 stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
+                                 stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)"
                                  style="cursor: @(mode == EditorMode.Select ? "move" : "pointer");" />
                     }
                     else if (currentNode.Shape == NodeShape.Cylinder)
                     {
+                        var nodeStrokeWidth = currentNode.StrokeWidth ?? 2;
                         var rx = currentNode.Width / 2;
                         var ellipseRy = 10.0;
                         var cy1 = ellipseRy;
                         var cy2 = currentNode.Height - ellipseRy;
-                        
+
                         <g style="cursor: @(mode == EditorMode.Select ? "move" : "pointer");">
                             @* Draw as a single path for better rendering *@
-                            <path d="M 0,@cy1 
+                            <path d="M 0,@cy1
                                      Q 0,@(cy1 - ellipseRy) @rx,@(cy1 - ellipseRy)
                                      Q @currentNode.Width,@(cy1 - ellipseRy) @currentNode.Width,@cy1
                                      L @currentNode.Width,@cy2
@@ -1097,13 +1102,13 @@
                                      Q 0,@(cy2 + ellipseRy) 0,@cy2
                                      Z"
                                   fill="@(currentNode.FillColor ?? "white")"
-                                  stroke="@(selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor)"
-                                  stroke-width="@(selectedNodes.Contains(nodeId) ? "3" : "2")" />
+                                  stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
+                                  stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)" />
                             @* Top arc visible part *@
                             <path d="M 0,@cy1 Q 0,@(cy1 + ellipseRy / 2) @rx,@(cy1 + ellipseRy / 2) Q @currentNode.Width,@(cy1 + ellipseRy / 2) @currentNode.Width,@cy1"
                                   fill="none"
-                                  stroke="@(selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor)"
-                                  stroke-width="@(selectedNodes.Contains(nodeId) ? "3" : "2")" />
+                                  stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
+                                  stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)" />
                         </g>
                     }
 
