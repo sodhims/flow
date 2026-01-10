@@ -1192,5 +1192,109 @@ private void ToggleChainMode()
 
         return name[..Math.Min(availableLength, name.Length)] + "..." + extension;
     }
+
+    // Handle attachment upload from the double-click dialog
+    private async Task HandleDialogAttachmentUpload(InputFileChangeEventArgs e, Node targetNode)
+    {
+        if (targetNode == null) return;
+
+        var file = e.File;
+        if (file == null) return;
+
+        // Determine file type
+        var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+        AttachmentType fileType;
+        string mimeType;
+
+        switch (extension)
+        {
+            case ".svg":
+                fileType = AttachmentType.Svg;
+                mimeType = "image/svg+xml";
+                break;
+            case ".pdf":
+                fileType = AttachmentType.Pdf;
+                mimeType = "application/pdf";
+                break;
+            default:
+                return; // Unsupported file type
+        }
+
+        // Read file content as Base64
+        const long maxFileSize = 5 * 1024 * 1024; // 5MB limit
+        using var stream = file.OpenReadStream(maxFileSize);
+        using var memoryStream = new MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        var base64 = Convert.ToBase64String(memoryStream.ToArray());
+        var dataUri = $"data:{mimeType};base64,{base64}";
+
+        // Create attachment
+        var attachment = new NodeAttachment
+        {
+            FileName = file.Name,
+            FileType = fileType,
+            DataUri = dataUri
+        };
+
+        // Add to node
+        targetNode.Attachments ??= new List<NodeAttachment>();
+        targetNode.Attachments.Add(attachment);
+
+        // Auto-expand node to fit SVG if it's too small
+        if (fileType == AttachmentType.Svg)
+        {
+            var minSvgNodeSize = 100.0;
+            if (targetNode.Width < minSvgNodeSize)
+                targetNode.Width = minSvgNodeSize;
+            if (targetNode.Height < minSvgNodeSize + 20) // +20 for text label space
+                targetNode.Height = minSvgNodeSize + 20;
+        }
+
+        StateHasChanged();
+    }
+
+    // Place an SVG attachment as a new node on the canvas
+    private void PlaceAttachmentOnCanvas(Node sourceNode, NodeAttachment attachment)
+    {
+        if (attachment.FileType != AttachmentType.Svg) return;
+
+        // Create a new node sized to display the SVG nicely
+        // Default to 120x120 for a square node that shows the SVG well
+        var nodeSize = 120.0;
+
+        var newNode = new Node
+        {
+            Id = nodes.Count > 0 ? nodes.Max(n => n.Id) + 1 : 1,
+            X = sourceNode.X + sourceNode.Width + 50, // Place to the right of source node
+            Y = sourceNode.Y,
+            Width = nodeSize,
+            Height = nodeSize + 20, // Extra space for text label at bottom
+            Text = Path.GetFileNameWithoutExtension(attachment.FileName), // Cleaner label without extension
+            Shape = NodeShape.Rectangle,
+            FillColor = "#ffffff",
+            StrokeColor = "#374151",
+            // Store the SVG data URI for rendering
+            Attachments = new List<NodeAttachment>
+            {
+                new NodeAttachment
+                {
+                    Id = attachment.Id,
+                    FileName = attachment.FileName,
+                    FileType = attachment.FileType,
+                    DataUri = attachment.DataUri,
+                    DisplayWidth = nodeSize - 16, // Match the padding in rendering
+                    DisplayHeight = nodeSize - 16
+                }
+            }
+        };
+
+        nodes.Add(newNode);
+
+        // Select the new node
+        selectedNodes.Clear();
+        selectedNodes.Add(newNode.Id);
+
+        StateHasChanged();
+    }
 }
 

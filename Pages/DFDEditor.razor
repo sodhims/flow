@@ -1913,6 +1913,37 @@
                                 <option value="5">5px</option>
                             </select>
                         </div>
+
+                        @* Attachments *@
+                        <div class="panel-row" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                            <label>Attachments (SVG/PDF):</label>
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <InputFile OnChange="@(e => HandleDialogAttachmentUpload(e, editNode))" accept=".svg,.pdf" />
+                        </div>
+                        @if (editNode.Attachments?.Any() == true)
+                        {
+                            <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
+                                @foreach (var att in editNode.Attachments)
+                                {
+                                    <div style="display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; font-size: 11px;">
+                                        <span>@(att.FileType == AttachmentType.Svg ? "🖼️" : "📄")</span>
+                                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@att.FileName">@TruncateFileName(att.FileName, 20)</span>
+                                        @if (att.FileType == AttachmentType.Svg)
+                                        {
+                                            <button type="button" style="padding: 2px 6px; font-size: 10px; background: #dbeafe; border: 1px solid #93c5fd; border-radius: 3px; cursor: pointer;"
+                                                    @onclick="@(() => PlaceAttachmentOnCanvas(editNode, att))" title="Place on canvas">📍</button>
+                                        }
+                                        <button type="button" style="padding: 2px 6px; font-size: 10px; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 3px; cursor: pointer;"
+                                                @onclick="@(() => RemoveAttachment(editNode, att.Id))" title="Remove">✕</button>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="font-size: 11px; color: #9ca3af; text-align: center; padding: 8px;">No attachments</div>
+                        }
                     }
                 }
                 else

@@ -110,9 +110,54 @@ public partial class DFDEditor
             return;
         }
 
+        // Check if node has SVG attachments to render inside the node
+        var svgAttachment = node.Attachments?.FirstOrDefault(a => a.FileType == AttachmentType.Svg);
+        if (svgAttachment != null)
+        {
+            // Render SVG attachment inside the node, scaled to fit with padding
+            var padding = 8.0;
+            var imgWidth = node.Width - padding * 2;
+            var imgHeight = node.Height - padding * 2;
+
+            // If there's text, leave room for it at the bottom
+            var hasText = !string.IsNullOrWhiteSpace(node.Text);
+            if (hasText)
+            {
+                imgHeight -= 20; // Leave space for text label
+            }
+
+            builder.OpenElement(seq++, "image");
+            builder.AddAttribute(seq++, "x", padding.ToString());
+            builder.AddAttribute(seq++, "y", padding.ToString());
+            builder.AddAttribute(seq++, "width", imgWidth.ToString());
+            builder.AddAttribute(seq++, "height", imgHeight.ToString());
+            builder.AddAttribute(seq++, "href", svgAttachment.DataUri);
+            builder.AddAttribute(seq++, "preserveAspectRatio", "xMidYMid meet");
+            builder.AddAttribute(seq++, "style", "pointer-events: none;");
+            builder.CloseElement();
+
+            // Render text label at bottom if present
+            if (hasText)
+            {
+                var textY = node.Height - 10;
+                builder.OpenElement(seq++, "text");
+                builder.AddAttribute(seq++, "x", (node.Width / 2).ToString());
+                builder.AddAttribute(seq++, "y", textY.ToString());
+                builder.AddAttribute(seq++, "text-anchor", "middle");
+                builder.AddAttribute(seq++, "dominant-baseline", "middle");
+                builder.AddAttribute(seq++, "fill", "#374151");
+                builder.AddAttribute(seq++, "font-size", "12");
+                builder.AddAttribute(seq++, "style", "pointer-events: none; user-select: none;");
+                builder.AddContent(seq++, node.Text);
+                builder.CloseElement();
+            }
+
+            return; // Don't render icon/normal text when SVG is displayed
+        }
+
         // Check if node has an icon
         var hasIcon = !string.IsNullOrEmpty(node.Icon) && IconLibrary.ContainsKey(node.Icon);
-        
+
         // Render icon if present
         if (hasIcon)
         {
