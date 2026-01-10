@@ -178,27 +178,33 @@ namespace dfd2wasm.Services
 
         private void ExportNode(StringBuilder svg, Node node)
         {
-            // Use the same stroke color as the UI (#374151 - dark gray)
-            const string strokeColor = "#374151";
-            const string fillColor = "white";
-            const string strokeWidth = "2";
-            
+            // Use node properties or defaults
+            var strokeColor = node.StrokeColor ?? "#374151";
+            var fillColor = node.FillColor ?? "white";
+            var strokeWidth = node.StrokeWidth ?? 2;
+            var cornerRadius = node.CornerRadius ?? 4;
+            var dashArray = node.StrokeDashArray;
+            var dashAttr = string.IsNullOrEmpty(dashArray) ? "" : $" stroke-dasharray=\"{dashArray}\"";
+
+            // If stroke width is 0, use "none" for stroke
+            var strokeAttr = strokeWidth == 0 ? "none" : strokeColor;
+
             switch (node.Shape)
             {
                 case NodeShape.Rectangle:
-                    svg.AppendLine($"  <rect x=\"{node.X}\" y=\"{node.Y}\" width=\"{node.Width}\" height=\"{node.Height}\" fill=\"{fillColor}\" stroke=\"{strokeColor}\" stroke-width=\"{strokeWidth}\" rx=\"4\" />");
+                    svg.AppendLine($"  <rect x=\"{node.X}\" y=\"{node.Y}\" width=\"{node.Width}\" height=\"{node.Height}\" fill=\"{fillColor}\" stroke=\"{strokeAttr}\" stroke-width=\"{strokeWidth}\" rx=\"{cornerRadius}\"{dashAttr} />");
                     break;
                 case NodeShape.Ellipse:
-                    svg.AppendLine($"  <ellipse cx=\"{node.X + node.Width/2}\" cy=\"{node.Y + node.Height/2}\" rx=\"{node.Width/2}\" ry=\"{node.Height/2}\" fill=\"{fillColor}\" stroke=\"{strokeColor}\" stroke-width=\"{strokeWidth}\" />");
+                    svg.AppendLine($"  <ellipse cx=\"{node.X + node.Width/2}\" cy=\"{node.Y + node.Height/2}\" rx=\"{node.Width/2}\" ry=\"{node.Height/2}\" fill=\"{fillColor}\" stroke=\"{strokeAttr}\" stroke-width=\"{strokeWidth}\"{dashAttr} />");
                     break;
                 case NodeShape.Diamond:
                     var diamondMidX = node.X + node.Width/2;
                     var diamondMidY = node.Y + node.Height/2;
-                    svg.AppendLine($"  <polygon points=\"{diamondMidX},{node.Y} {node.X + node.Width},{diamondMidY} {diamondMidX},{node.Y + node.Height} {node.X},{diamondMidY}\" fill=\"{fillColor}\" stroke=\"{strokeColor}\" stroke-width=\"{strokeWidth}\" />");
+                    svg.AppendLine($"  <polygon points=\"{diamondMidX},{node.Y} {node.X + node.Width},{diamondMidY} {diamondMidX},{node.Y + node.Height} {node.X},{diamondMidY}\" fill=\"{fillColor}\" stroke=\"{strokeAttr}\" stroke-width=\"{strokeWidth}\"{dashAttr} />");
                     break;
                 case NodeShape.Parallelogram:
                     var skew = 15.0;
-                    svg.AppendLine($"  <polygon points=\"{node.X + skew},{node.Y} {node.X + node.Width},{node.Y} {node.X + node.Width - skew},{node.Y + node.Height} {node.X},{node.Y + node.Height}\" fill=\"{fillColor}\" stroke=\"{strokeColor}\" stroke-width=\"{strokeWidth}\" />");
+                    svg.AppendLine($"  <polygon points=\"{node.X + skew},{node.Y} {node.X + node.Width},{node.Y} {node.X + node.Width - skew},{node.Y + node.Height} {node.X},{node.Y + node.Height}\" fill=\"{fillColor}\" stroke=\"{strokeAttr}\" stroke-width=\"{strokeWidth}\"{dashAttr} />");
                     break;
                 case NodeShape.Cylinder:
                     var rx = node.Width / 2;
@@ -207,27 +213,55 @@ namespace dfd2wasm.Services
                     var cy2 = node.Y + node.Height - ellipseRy;
                     var cx = node.X + rx;
                     // Main body path
-                    svg.AppendLine($"  <path d=\"M {node.X},{cy1} Q {node.X},{cy1 - ellipseRy} {cx},{cy1 - ellipseRy} Q {node.X + node.Width},{cy1 - ellipseRy} {node.X + node.Width},{cy1} L {node.X + node.Width},{cy2} Q {node.X + node.Width},{cy2 + ellipseRy} {cx},{cy2 + ellipseRy} Q {node.X},{cy2 + ellipseRy} {node.X},{cy2} Z\" fill=\"{fillColor}\" stroke=\"{strokeColor}\" stroke-width=\"{strokeWidth}\" />");
+                    svg.AppendLine($"  <path d=\"M {node.X},{cy1} Q {node.X},{cy1 - ellipseRy} {cx},{cy1 - ellipseRy} Q {node.X + node.Width},{cy1 - ellipseRy} {node.X + node.Width},{cy1} L {node.X + node.Width},{cy2} Q {node.X + node.Width},{cy2 + ellipseRy} {cx},{cy2 + ellipseRy} Q {node.X},{cy2 + ellipseRy} {node.X},{cy2} Z\" fill=\"{fillColor}\" stroke=\"{strokeAttr}\" stroke-width=\"{strokeWidth}\"{dashAttr} />");
                     // Top arc visible part
-                    svg.AppendLine($"  <path d=\"M {node.X},{cy1} Q {node.X},{cy1 + ellipseRy / 2} {cx},{cy1 + ellipseRy / 2} Q {node.X + node.Width},{cy1 + ellipseRy / 2} {node.X + node.Width},{cy1}\" fill=\"none\" stroke=\"{strokeColor}\" stroke-width=\"{strokeWidth}\" />");
+                    svg.AppendLine($"  <path d=\"M {node.X},{cy1} Q {node.X},{cy1 + ellipseRy / 2} {cx},{cy1 + ellipseRy / 2} Q {node.X + node.Width},{cy1 + ellipseRy / 2} {node.X + node.Width},{cy1}\" fill=\"none\" stroke=\"{strokeAttr}\" stroke-width=\"{strokeWidth}\"{dashAttr} />");
                     break;
+            }
+
+            // Export embedded image/SVG attachments
+            var imageAttachment = node.Attachments?.FirstOrDefault(a => a.FileType == AttachmentType.Svg || a.FileType == AttachmentType.Image);
+            if (imageAttachment != null)
+            {
+                // Calculate image position inside node with padding
+                var padding = 4.0;
+                var imgX = node.X + padding;
+                var imgY = node.Y + padding;
+                var imgWidth = node.Width - (padding * 2);
+                var imgHeight = node.Height - (padding * 2);
+
+                // Leave room for text at bottom if node has text
+                if (!string.IsNullOrWhiteSpace(node.Text))
+                {
+                    imgHeight = imgHeight * 0.7; // Use 70% for image, 30% for text
+                }
+
+                svg.AppendLine($"  <image x=\"{imgX}\" y=\"{imgY}\" width=\"{imgWidth}\" height=\"{imgHeight}\" href=\"{imageAttachment.DataUri}\" preserveAspectRatio=\"xMidYMid meet\" />");
             }
 
             // Export text with proper handling for multiline
             var escapedText = node.Text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
             var lines = escapedText.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            
+
+            // Adjust text Y position if there's an image attachment
+            double textYCenter = node.Y + node.Height / 2;
+            if (imageAttachment != null && !string.IsNullOrWhiteSpace(node.Text))
+            {
+                // Position text in the bottom 30% of the node
+                textYCenter = node.Y + node.Height * 0.85;
+            }
+
             if (lines.Length <= 1)
             {
-                svg.AppendLine($"  <text x=\"{node.X + node.Width / 2}\" y=\"{node.Y + node.Height / 2}\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"14\" fill=\"#374151\">{escapedText}</text>");
+                svg.AppendLine($"  <text x=\"{node.X + node.Width / 2}\" y=\"{textYCenter}\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"14\" fill=\"#374151\">{escapedText}</text>");
             }
             else
             {
                 // Handle multiline text
                 var lineHeight = 18;
                 var totalHeight = lines.Length * lineHeight;
-                var startY = node.Y + (node.Height - totalHeight) / 2 + lineHeight / 2;
-                
+                var startY = textYCenter - totalHeight / 2 + lineHeight / 2;
+
                 for (int i = 0; i < lines.Length; i++)
                 {
                     svg.AppendLine($"  <text x=\"{node.X + node.Width / 2}\" y=\"{startY + i * lineHeight}\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Arial, sans-serif\" font-size=\"14\" fill=\"#374151\">{lines[i]}</text>");
