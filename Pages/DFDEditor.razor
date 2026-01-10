@@ -1041,18 +1041,22 @@
                     else if (currentNode.Shape == NodeShape.Rectangle)
                     {
                         var nodeStrokeWidth = currentNode.StrokeWidth ?? 2;
+                        var cornerRadius = currentNode.CornerRadius ?? 4;
+                        var dashArray = currentNode.StrokeDashArray;
                         <rect x="0" y="0"
                               width="@currentNode.Width"
                               height="@currentNode.Height"
                               fill="@(currentNode.FillColor ?? "white")"
                               stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
                               stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)"
-                              rx="4"
+                              stroke-dasharray="@(dashArray ?? "")"
+                              rx="@cornerRadius"
                               style="cursor: @(mode == EditorMode.Select ? "move" : "pointer");" />
                     }
                     else if (currentNode.Shape == NodeShape.Ellipse)
                     {
                         var nodeStrokeWidth = currentNode.StrokeWidth ?? 2;
+                        var dashArray = currentNode.StrokeDashArray;
                         <ellipse cx="@(currentNode.Width / 2)"
                                  cy="@(currentNode.Height / 2)"
                                  rx="@(currentNode.Width / 2)"
@@ -1060,33 +1064,39 @@
                                  fill="@(currentNode.FillColor ?? "white")"
                                  stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
                                  stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)"
+                                 stroke-dasharray="@(dashArray ?? "")"
                                  style="cursor: @(mode == EditorMode.Select ? "move" : "pointer");" />
                     }
                     else if (currentNode.Shape == NodeShape.Diamond)
                     {
                         var nodeStrokeWidth = currentNode.StrokeWidth ?? 2;
+                        var dashArray = currentNode.StrokeDashArray;
                         var midX = currentNode.Width / 2;
                         var midY = currentNode.Height / 2;
                         <polygon points="@midX,0 @currentNode.Width,@midY @midX,@currentNode.Height 0,@midY"
                                  fill="@(currentNode.FillColor ?? "white")"
                                  stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
                                  stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)"
+                                 stroke-dasharray="@(dashArray ?? "")"
                                  style="cursor: @(mode == EditorMode.Select ? "move" : "pointer");" />
                     }
                     else if (currentNode.Shape == NodeShape.Parallelogram)
                     {
                         var nodeStrokeWidth = currentNode.StrokeWidth ?? 2;
+                        var dashArray = currentNode.StrokeDashArray;
                         var skew = 15.0;
                         var points = $"{skew},0 {currentNode.Width},0 {currentNode.Width - skew},{currentNode.Height} 0,{currentNode.Height}";
                         <polygon points="@points"
                                  fill="@(currentNode.FillColor ?? "white")"
                                  stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
                                  stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)"
+                                 stroke-dasharray="@(dashArray ?? "")"
                                  style="cursor: @(mode == EditorMode.Select ? "move" : "pointer");" />
                     }
                     else if (currentNode.Shape == NodeShape.Cylinder)
                     {
                         var nodeStrokeWidth = currentNode.StrokeWidth ?? 2;
+                        var dashArray = currentNode.StrokeDashArray;
                         var rx = currentNode.Width / 2;
                         var ellipseRy = 10.0;
                         var cy1 = ellipseRy;
@@ -1103,12 +1113,14 @@
                                      Z"
                                   fill="@(currentNode.FillColor ?? "white")"
                                   stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
-                                  stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)" />
+                                  stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)"
+                                  stroke-dasharray="@(dashArray ?? "")" />
                             @* Top arc visible part *@
                             <path d="M 0,@cy1 Q 0,@(cy1 + ellipseRy / 2) @rx,@(cy1 + ellipseRy / 2) Q @currentNode.Width,@(cy1 + ellipseRy / 2) @currentNode.Width,@cy1"
                                   fill="none"
                                   stroke="@(nodeStrokeWidth == 0 ? "none" : (selectedNodes.Contains(nodeId) ? "#3b82f6" : currentNode.StrokeColor))"
-                                  stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)" />
+                                  stroke-width="@(selectedNodes.Contains(nodeId) ? Math.Max(nodeStrokeWidth, 3) : nodeStrokeWidth)"
+                                  stroke-dasharray="@(dashArray ?? "")" />
                         </g>
                     }
 
@@ -1923,6 +1935,32 @@
                                 <option value="5">5px</option>
                             </select>
                         </div>
+
+                        @* Border Style *@
+                        <div class="panel-row">
+                            <label>Border Style:</label>
+                            <select value="@(editNode.StrokeDashArray ?? "")" @onchange="@(e => { editNode.StrokeDashArray = string.IsNullOrEmpty(e.Value?.ToString()) ? null : e.Value?.ToString(); StateHasChanged(); })" class="edge-dropdown" style="width:100%;">
+                                <option value="">Solid</option>
+                                <option value="5,5">Dashed</option>
+                                <option value="2,2">Dotted</option>
+                                <option value="10,5,2,5">Dash-Dot</option>
+                            </select>
+                        </div>
+
+                        @* Corner Radius (only for Rectangle) *@
+                        @if (editNode.Shape == NodeShape.Rectangle)
+                        {
+                            <div class="panel-row">
+                                <label>Corner Radius:</label>
+                                <select value="@(editNode.CornerRadius ?? 4)" @onchange="@(e => { editNode.CornerRadius = int.Parse(e.Value?.ToString() ?? "4"); StateHasChanged(); })" class="edge-dropdown" style="width:100%;">
+                                    <option value="0">None (Square)</option>
+                                    <option value="4">Small (4px)</option>
+                                    <option value="8">Medium (8px)</option>
+                                    <option value="12">Large (12px)</option>
+                                    <option value="20">Round (20px)</option>
+                                </select>
+                            </div>
+                        }
 
                         @* Attachments *@
                         <div class="panel-row" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">

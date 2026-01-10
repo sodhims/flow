@@ -14,6 +14,7 @@ public class Node
     public string? FillColor { get; set; }
     public int? StrokeWidth { get; set; }
     public string? StrokeDashArray { get; set; }
+    public int? CornerRadius { get; set; }  // For rectangles: 0=square, 4=small, 8=medium, etc.
     // Optional template id and shape id allow using a shape library (e.g. "flowchart", "circuit").
     // When set, the renderer will prefer the template shape over the `NodeShape` enum.
     public string? TemplateId { get; set; }
