@@ -1910,6 +1910,7 @@
                         <div class="panel-row">
                             <label>Border Width:</label>
                             <select value="@(editNode.StrokeWidth ?? 2)" @onchange="@(e => { editNode.StrokeWidth = int.Parse(e.Value?.ToString() ?? "2"); StateHasChanged(); })" class="edge-dropdown" style="width:100%;">
+                                <option value="0">None</option>
                                 <option value="1">1px</option>
                                 <option value="2">2px</option>
                                 <option value="3">3px</option>
