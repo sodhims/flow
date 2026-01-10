@@ -1454,9 +1454,9 @@
                                     </div>
                                 </div>
                                 <div class="attachment-section">
-                                    <label>Attachments (SVG/PDF)</label>
+                                    <label>Attachments</label>
                                     <div class="attachment-upload">
-                                        <InputFile OnChange="HandleAttachmentUpload" accept=".svg,.pdf" />
+                                        <InputFile OnChange="HandleAttachmentUpload" accept=".svg,.pdf,.gif,.jpg,.jpeg,.png,.webp" />
                                     </div>
                                     @if (selectedNode.Attachments?.Any() == true)
                                     {
@@ -1464,8 +1464,12 @@
                                             @foreach (var att in selectedNode.Attachments)
                                             {
                                                 <div class="attachment-item">
-                                                    <span class="attachment-icon">@(att.FileType == AttachmentType.Svg ? "🖼️" : "📄")</span>
-                                                    <span class="attachment-name" title="@att.FileName">@TruncateFileName(att.FileName, 15)</span>
+                                                    <span class="attachment-icon">@(att.FileType == AttachmentType.Svg ? "🖼️" : (att.FileType == AttachmentType.Pdf ? "📄" : "🖼️"))</span>
+                                                    <span class="attachment-name" title="@att.FileName">@TruncateFileName(att.FileName, 12)</span>
+                                                    @if (att.FileType == AttachmentType.Pdf)
+                                                    {
+                                                        <button class="attachment-view" @onclick="@(() => OpenPdfAttachment(att))" title="View PDF">👁️</button>
+                                                    }
                                                     <button class="attachment-delete" @onclick="@(() => RemoveAttachment(selectedNode, att.Id))" title="Remove">✕</button>
                                                 </div>
                                             }
@@ -1916,10 +1920,10 @@
 
                         @* Attachments *@
                         <div class="panel-row" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb;">
-                            <label>Attachments (SVG/PDF):</label>
+                            <label>Attachments:</label>
                         </div>
                         <div style="margin-bottom: 8px;">
-                            <InputFile OnChange="@(e => HandleDialogAttachmentUpload(e, editNode))" accept=".svg,.pdf" />
+                            <InputFile OnChange="@(e => HandleDialogAttachmentUpload(e, editNode))" accept=".svg,.pdf,.gif,.jpg,.jpeg,.png,.webp" />
                         </div>
                         @if (editNode.Attachments?.Any() == true)
                         {
@@ -1927,9 +1931,9 @@
                                 @foreach (var att in editNode.Attachments)
                                 {
                                     <div style="display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px; font-size: 11px;">
-                                        <span>@(att.FileType == AttachmentType.Svg ? "🖼️" : "📄")</span>
+                                        <span>@(att.FileType == AttachmentType.Pdf ? "📄" : "🖼️")</span>
                                         <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@att.FileName">@TruncateFileName(att.FileName, 20)</span>
-                                        @if (att.FileType == AttachmentType.Svg)
+                                        @if (att.FileType == AttachmentType.Svg || att.FileType == AttachmentType.Image)
                                         {
                                             <button type="button" style="padding: 2px 6px; font-size: 10px; background: #dbeafe; border: 1px solid #93c5fd; border-radius: 3px; cursor: pointer;"
                                                     @onclick="@(() => PlaceAttachmentOnCanvas(editNode, att))" title="Place on canvas">📍</button>

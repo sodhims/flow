@@ -321,12 +321,24 @@ public partial class DFDEditor
         }
     }
 
-    private void HandleNodeClick(int nodeId, MouseEventArgs e)
+    private async void HandleNodeClick(int nodeId, MouseEventArgs e)
     {
         Console.WriteLine($"HandleNodeClick - NodeId: {nodeId}, Mode: {mode}");
         Console.WriteLine($"  chainMode={chainMode}, lastChainedNodeId={lastChainedNodeId}");
 
         if (!(mode == EditorMode.Select || selectToolActive)) return;
+
+        // Ctrl+click on node with PDF attachment opens the PDF viewer
+        if (e.CtrlKey)
+        {
+            var node = nodes.FirstOrDefault(n => n.Id == nodeId);
+            var pdfAttachment = node?.Attachments?.FirstOrDefault(a => a.FileType == AttachmentType.Pdf);
+            if (pdfAttachment != null)
+            {
+                await JS.InvokeVoidAsync("openPdfViewer", pdfAttachment.DataUri);
+                return;
+            }
+        }
 
         // In Rearrange mode, just select/deselect nodes - no connection logic
         if (connectionMode == ConnectionModeType.Rearrange)

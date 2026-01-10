@@ -110,11 +110,11 @@ public partial class DFDEditor
             return;
         }
 
-        // Check if node has SVG attachments to render inside the node
-        var svgAttachment = node.Attachments?.FirstOrDefault(a => a.FileType == AttachmentType.Svg);
-        if (svgAttachment != null)
+        // Check if node has SVG or Image attachments to render inside the node
+        var imageAttachment = node.Attachments?.FirstOrDefault(a => a.FileType == AttachmentType.Svg || a.FileType == AttachmentType.Image);
+        if (imageAttachment != null)
         {
-            // Render SVG attachment inside the node, scaled to fit with padding
+            // Render image attachment inside the node, scaled to fit with padding
             var padding = 8.0;
             var imgWidth = node.Width - padding * 2;
             var imgHeight = node.Height - padding * 2;
@@ -131,7 +131,7 @@ public partial class DFDEditor
             builder.AddAttribute(seq++, "y", padding.ToString());
             builder.AddAttribute(seq++, "width", imgWidth.ToString());
             builder.AddAttribute(seq++, "height", imgHeight.ToString());
-            builder.AddAttribute(seq++, "href", svgAttachment.DataUri);
+            builder.AddAttribute(seq++, "href", imageAttachment.DataUri);
             builder.AddAttribute(seq++, "preserveAspectRatio", "xMidYMid meet");
             builder.AddAttribute(seq++, "style", "pointer-events: none;");
             builder.CloseElement();
@@ -152,7 +152,7 @@ public partial class DFDEditor
                 builder.CloseElement();
             }
 
-            return; // Don't render icon/normal text when SVG is displayed
+            return; // Don't render icon/normal text when image is displayed
         }
 
         // Check if node has PDF attachments to render as clickable icon

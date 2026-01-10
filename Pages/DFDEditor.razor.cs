@@ -1145,6 +1145,23 @@ private void ToggleChainMode()
                 fileType = AttachmentType.Pdf;
                 mimeType = "application/pdf";
                 break;
+            case ".gif":
+                fileType = AttachmentType.Image;
+                mimeType = "image/gif";
+                break;
+            case ".jpg":
+            case ".jpeg":
+                fileType = AttachmentType.Image;
+                mimeType = "image/jpeg";
+                break;
+            case ".png":
+                fileType = AttachmentType.Image;
+                mimeType = "image/png";
+                break;
+            case ".webp":
+                fileType = AttachmentType.Image;
+                mimeType = "image/webp";
+                break;
             default:
                 return; // Unsupported file type
         }
@@ -1219,6 +1236,23 @@ private void ToggleChainMode()
                 fileType = AttachmentType.Pdf;
                 mimeType = "application/pdf";
                 break;
+            case ".gif":
+                fileType = AttachmentType.Image;
+                mimeType = "image/gif";
+                break;
+            case ".jpg":
+            case ".jpeg":
+                fileType = AttachmentType.Image;
+                mimeType = "image/jpeg";
+                break;
+            case ".png":
+                fileType = AttachmentType.Image;
+                mimeType = "image/png";
+                break;
+            case ".webp":
+                fileType = AttachmentType.Image;
+                mimeType = "image/webp";
+                break;
             default:
                 return; // Unsupported file type
         }
@@ -1243,23 +1277,23 @@ private void ToggleChainMode()
         targetNode.Attachments ??= new List<NodeAttachment>();
         targetNode.Attachments.Add(attachment);
 
-        // Auto-expand node to fit SVG if it's too small
-        if (fileType == AttachmentType.Svg)
+        // Auto-expand node to fit images if it's too small
+        if (fileType == AttachmentType.Svg || fileType == AttachmentType.Image)
         {
-            var minSvgNodeSize = 100.0;
-            if (targetNode.Width < minSvgNodeSize)
-                targetNode.Width = minSvgNodeSize;
-            if (targetNode.Height < minSvgNodeSize + 20) // +20 for text label space
-                targetNode.Height = minSvgNodeSize + 20;
+            var minImageNodeSize = 100.0;
+            if (targetNode.Width < minImageNodeSize)
+                targetNode.Width = minImageNodeSize;
+            if (targetNode.Height < minImageNodeSize + 20) // +20 for text label space
+                targetNode.Height = minImageNodeSize + 20;
         }
 
         StateHasChanged();
     }
 
-    // Place an SVG attachment as a new node on the canvas
+    // Place an image attachment as a new node on the canvas
     private void PlaceAttachmentOnCanvas(Node sourceNode, NodeAttachment attachment)
     {
-        if (attachment.FileType != AttachmentType.Svg) return;
+        if (attachment.FileType != AttachmentType.Svg && attachment.FileType != AttachmentType.Image) return;
 
         // Create a new node sized to display the SVG nicely
         // Default to 120x120 for a square node that shows the SVG well

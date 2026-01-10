@@ -42,7 +42,8 @@ public class NodeAttachment
 public enum AttachmentType
 {
     Svg,
-    Pdf
+    Pdf,
+    Image  // GIF, JPEG, PNG, WebP
 }
 public enum NodeShape
 {
