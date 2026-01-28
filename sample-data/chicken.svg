@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Chicken">
+  <defs>
+    <linearGradient id="feather" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f2f2f2"/>
+    </linearGradient>
+    <linearGradient id="beak" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffcc4d"/>
+      <stop offset="1" stop-color="#f4a000"/>
+    </linearGradient>
+    <linearGradient id="comb" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff4d4d"/>
+      <stop offset="1" stop-color="#d62323"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Ground shadow -->
+  <ellipse cx="265" cy="430" rx="170" ry="35" fill="#000" opacity="0.08"/>
+
+  <!-- Body -->
+  <g filter="url(#shadow)">
+    <ellipse cx="285" cy="300" rx="160" ry="120" fill="url(#feather)" stroke="#222" stroke-width="8"/>
+    <!-- Wing -->
+    <path d="M245 290
+             C200 250, 160 260, 150 300
+             C140 340, 175 380, 235 375
+             C270 372, 285 340, 275 315
+             C268 298, 258 296, 245 290 Z"
+          fill="#e9e9e9" stroke="#222" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Wing feather lines -->
+    <path d="M175 305 C205 330, 230 350, 255 355" fill="none" stroke="#bdbdbd" stroke-width="6" stroke-linecap="round"/>
+    <path d="M168 330 C200 355, 225 370, 250 372" fill="none" stroke="#bdbdbd" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Tail feathers -->
+  <g>
+    <path d="M400 270 C450 235, 480 250, 470 290 C462 325, 435 338, 398 322 Z"
+          fill="#ffffff" stroke="#222" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M385 250 C420 205, 455 210, 455 245 C455 275, 425 290, 392 280 Z"
+          fill="#f7f7f7" stroke="#222" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M372 285 C422 270, 460 290, 448 330 C436 368, 402 372, 372 346 Z"
+          fill="#f2f2f2" stroke="#222" stroke-width="8" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Head -->
+  <g filter="url(#shadow)">
+    <circle cx="175" cy="225" r="75" fill="url(#feather)" stroke="#222" stroke-width="8"/>
+    <!-- Comb -->
+    <path d="M145 155
+             C155 120, 185 120, 190 150
+             C210 120, 240 135, 230 170
+             C255 155, 270 190, 245 210
+             C215 190, 185 190, 165 195
+             C150 185, 140 175, 145 155 Z"
+          fill="url(#comb)" stroke="#222" stroke-width="8" stroke-linejoin="round"/>
+    <!-- Wattle -->
+    <path d="M170 280
+             C150 290, 148 320, 170 332
+             C195 345, 210 322, 200 305
+             C192 292, 182 275, 170 280 Z"
+          fill="url(#comb)" stroke="#222" stroke-width="8" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Beak -->
+  <g>
+    <path d="M235 230
+             L300 250
+             L235 270
+             C220 260, 220 240, 235 230 Z"
+          fill="url(#beak)" stroke="#222" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M235 250 L300 250" stroke="#222" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+  </g>
+
+  <!-- Eye -->
+  <g>
+    <circle cx="190" cy="220" r="18" fill="#222"/>
+    <circle cx="184" cy="214" r="6" fill="#fff"/>
+  </g>
+
+  <!-- Legs -->
+  <g>
+    <path d="M250 385
+             C245 425, 245 445, 245 465"
+          fill="none" stroke="#d19a00" stroke-width="12" stroke-linecap="round"/>
+    <path d="M315 385
+             C310 425, 310 445, 310 465"
+          fill="none" stroke="#d19a00" stroke-width="12" stroke-linecap="round"/>
+
+    <!-- Feet -->
+    <path d="M245 465
+             C225 470, 210 480, 195 490"
+          fill="none" stroke="#d19a00" stroke-width="10" stroke-linecap="round"/>
+    <path d="M245 465
+             C235 475, 235 490, 235 505"
+          fill="none" stroke="#d19a00" stroke-width="10" stroke-linecap="round"/>
+    <path d="M245 465
+             C260 475, 275 485, 290 490"
+          fill="none" stroke="#d19a00" stroke-width="10" stroke-linecap="round"/>
+
+    <path d="M310 465
+             C290 470, 275 480, 260 490"
+          fill="none" stroke="#d19a00" stroke-width="10" stroke-linecap="round"/>
+    <path d="M310 465
+             C300 475, 300 490, 300 505"
+          fill="none" stroke="#d19a00" stroke-width="10" stroke-linecap="round"/>
+    <path d="M310 465
+             C325 475, 340 485, 355 490"
+          fill="none" stroke="#d19a00" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>
